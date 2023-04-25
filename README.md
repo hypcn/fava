@@ -21,9 +21,9 @@ Core
 
 - server HTTP API
 - server WS API
-- server constructor with/without existing HTTP server
+- ~~server constructor with/without existing HTTP server~~
 - server serve web pages (different endpoints, API is default)
-- run server from cli
+- ~~run server from cli~~
 - define auth requirements
   - implement them
   - unauthenticated should *not* be the default
