@@ -1,5 +1,5 @@
 import { Server } from "http";
-import { Logger } from "./logger.interface";
+import { FavaLogger } from "./logger.interface";
 import { FavaLocation } from "./location.interface";
 
 /**
@@ -50,6 +50,6 @@ export interface FavaServerConfig {
   /**
    * Optionally override the default logger
    */
-  logger?: Logger,
+  logger?: FavaLogger,
 
 }
