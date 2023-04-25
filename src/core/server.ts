@@ -11,13 +11,13 @@ const DEFAULT_PORT = 6131;
 
 export class FavaServer {
 
-  private server: Server;
-  private app: Express;
-  private wss: any;
+  private server!: Server;
+  private app!: Express;
+  private wss!: WebSocketServer;
 
-  private httpEnabled: boolean;
-  private wsEnabled: boolean;
-  private uiEnabled: boolean;
+  private httpEnabled: boolean = false;
+  private wsEnabled: boolean = false;
+  private uiEnabled: boolean = false;
 
   private locations: FavaLocation[] = [];
 
@@ -25,10 +25,24 @@ export class FavaServer {
 
   constructor(config: FavaServerConfig) {
 
-    if (config.logger) this.logger = config.logger as Logger;
+    if (config.logLevel) {
+      Logger.logLevel = config.logLevel;
+    }
+    if (config.logger) {
+      this.logger = config.logger as Logger;
+    }
+
+    this.init(config);
+
+  }
+
+  async init(config: FavaServerConfig) {
 
     if (!config.locations || config.locations.length === 0) {
-      this.logger.log(`No locations specified; local drives will be discovered`);
+      this.logger.log(`No locations specified; discovering local drives...`);
+      this.locations = await FavaUtils.findDefaultLocations();
+      this.logger.log(`Discovered ${this.locations.length} local drives`);
+      this.logger.debug(`Local drive locations:`, this.locations);
     } else {
       this.locations = config.locations;
       this.logger.log(`${this.locations.length} locations specified`);
@@ -61,9 +75,9 @@ export class FavaServer {
     });
 
     if (config.ws) {
-      
+
       // TODO: wire up WS API
-      
+
     } else {
       this.logger.warn(`WS API disabled`);
     }
@@ -92,11 +106,13 @@ export class FavaServer {
       this.logger.log(`Fava wired up to existing HTTP server`);
     }
 
+    // Print addresses of configured interfaces
     let address = this.server.address();
     if (address === null) {
       address = `[unknown]`;
     } else if (typeof address === "object") {
-      address = `${address.address}:${address.port}`
+      const addr = address.address === "::" ? "localhost" : address.address;
+      address = `${addr}:${address.port}`
     }
     if (this.httpEnabled) {
       this.logger.log(`HTTP API available at: http://${address}/api`);
@@ -108,27 +124,6 @@ export class FavaServer {
       this.logger.log(`Web UI available at: http://${address}/ui`);
     }
 
-    // Long-running stuff at the end
-
-    if (this.locations.length === 0) {
-      this.logger.log(`Discovering local drives...`);
-      FavaUtils.findDefaultLocations().then(locations => {
-        this.locations = locations;
-        this.logger.log(`Discovered ${this.locations.length} local drives`);
-        this.logger.debug(`Local drive locations:`, this.locations);
-      });
-    }
-
   }
 
-}
-
-// curl http://localhost:6131/api/c:/dev/_Hypericon/fava
-const r = {
-  "route":"/api/:location/*",
-  "locationParam":"c:",
-  "reqMethod":"GET",
-  "reqOriginalUrl":"/api/c:/dev/_Hypericon/fava",
-  "reqPath":"/api/c:/dev/_Hypericon/fava",
-  "reqUrl":"/api/c:/dev/_Hypericon/fava"
 }

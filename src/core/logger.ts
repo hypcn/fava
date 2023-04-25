@@ -19,6 +19,8 @@ export class Logger implements FavaLogger {
 
   private options: LoggingOptions;
 
+  static logLevel: LogLevel = "log";
+
   constructor(opts?: LoggingOptions | string) {
     this.options = DEFAULT_LOGGING_OPTIONS;
     if (opts) {
@@ -45,6 +47,8 @@ export class Logger implements FavaLogger {
 
   static logMessages(level: LogLevel, opts: LoggingOptions | undefined, ...msgs: any[]) {
 
+    if (!this.levelSatisfiesLevel(level, this.logLevel)) return;
+
     const options: LoggingOptions = opts ?? DEFAULT_LOGGING_OPTIONS;
 
     const space = " ";
@@ -70,6 +74,19 @@ export class Logger implements FavaLogger {
 
     console.log(colourFn(format(...msgs)));
 
+  }
+
+  static levelSatisfiesLevel(test: LogLevel, against: LogLevel) {
+    if (against === "error") {
+      if (test === "error") return true;
+    } else if (against === "warn") {
+      if (test === "error" || test === "warn") return true;
+    } else if (against === "log") {
+      if (test === "error" || test === "warn" || test === "log") return true;
+    } else if (against === "debug") {
+      return true;
+    }
+    return false;
   }
 
 }

@@ -1,10 +1,9 @@
 import { Server } from "http";
 import { FavaLogger } from "./logger.interface";
 import { FavaLocation } from "./location.interface";
+import { LogLevel } from "../logger";
 
-/**
- * Configure whether an interface is enabled, and if so, with what capabilities
- */
+/** Configure whether an interface is enabled, and if so, with what capabilities */
 export type FavaServerInterfaceConfig =
   | {
     read: boolean,
@@ -15,9 +14,7 @@ export type FavaServerInterfaceConfig =
 
 export interface FavaServerConfig {
 
-  /**
-   * Optionally specify an existing server to use, otherwise a new one will be created
-   */
+  /** Optionally specify an existing server to use, otherwise a new one will be created */
   server?: Server,
 
   /**
@@ -32,24 +29,19 @@ export interface FavaServerConfig {
    */
   locations?: FavaLocation[],
 
-  /**
-   * Configure whether the HTTP API is enabled, and if so, with what capabilities
-   */
+  /** Configure whether the HTTP API is enabled, and if so, with what capabilities */
   http?: FavaServerInterfaceConfig,
 
-  /**
-   * Configure whether the websocket API is enabled, and if so, with what capabilities
-   */
+  /** Configure whether the websocket API is enabled, and if so, with what capabilities */
   ws?: FavaServerInterfaceConfig,
 
-  /**
-   * Configure whether the web UI is enabled, and if so, with what capabilities
-   */
+  /** Configure whether the web UI is enabled, and if so, with what capabilities */
   ui?: FavaServerInterfaceConfig,
 
-  /**
-   * Optionally override the default logger
-   */
+  /** Optionally override the default logger */
   logger?: FavaLogger,
+
+  /** Optionally configure the logging level of the built-in logger */
+  logLevel?: LogLevel,
 
 }

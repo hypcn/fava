@@ -1,6 +1,7 @@
 import express, { Express } from "express";
 import urlJoin from "url-join";
 import { list } from "drivelist";
+import { inspect } from "util";
 
 // const router = express.Router();
 
@@ -29,7 +30,7 @@ export function configureHttpApi(app: Express, options: {
   app.get(route, (req, res) => {
 
     // const driveList = await list();
-    // console.log(driveList);
+    // console.log(inspect(driveList, { depth: undefined }));
 
     // req.body
     // req.headers
@@ -49,6 +50,16 @@ export function configureHttpApi(app: Express, options: {
 
   });
 
+}
+
+// curl http://localhost:6131/api/c:/dev/_Hypericon/fava
+const res = {
+  "route": "/api/:location/*",
+  "locationParam": "c:",
+  "reqMethod": "GET",
+  "reqOriginalUrl": "/api/c:/dev/_Hypericon/fava",
+  "reqPath": "/api/c:/dev/_Hypericon/fava",
+  "reqUrl": "/api/c:/dev/_Hypericon/fava"
 }
 
 const r = {

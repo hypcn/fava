@@ -4,6 +4,7 @@ import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
 import { FavaServer } from "../core/server";
 import { FavaServerInterfaceConfig } from "../core/interfaces/server-config.interface";
+import { LogLevel } from "../core/logger";
 
 const argsParser = yargs(hideBin(process.argv))
   .usage(`USAGE:\nTODO`)
@@ -22,6 +23,11 @@ const argsParser = yargs(hideBin(process.argv))
     describe: "Specify the port (default: 6131)",
     number: true,
   })
+  .option("loglevel", {
+    // alias: ["p"],
+    describe: `Specify the log level, one of "error", "warn", "log", "debug", default: "log" `,
+    string: true,
+  })
   .epilog('(https://github.com/hypcn/fava)')
   ;
 
@@ -37,6 +43,7 @@ async function cli() {
     ws: argAsInterfaceConfig(argv.ws),
     ui: argAsInterfaceConfig(argv.ui),
     port: argv.port,
+    logLevel: argv.loglevel as LogLevel,
   });
 
 }
