@@ -5,6 +5,9 @@
   "author": "Ed Johnson, Hypericon Ltd.",
   "license": "MIT",
   "main": "dist/index.js",
+  "bin": {
+    "fava": "./dist/cli/cli.js"
+  },
   "scripts": {
     "dev": "tsc --watch --preserveWatchOutput",
     "build": "rimraf dist && tsc",
@@ -12,7 +15,9 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
+    "drivelist": "^11.1.0",
     "express": "^4.18.2",
+    "url-join": "^5.0.0",
     "ws": "^8.13.0",
     "yargs": "^17.7.1"
   },
