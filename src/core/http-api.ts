@@ -3,37 +3,61 @@ import urlJoin from "url-join";
 import { list } from "drivelist";
 import { inspect } from "util";
 import { Logger } from "./utils/logger";
+import { FavaCore } from "./core";
+import asyncHandler from "express-async-handler";
 
-// const router = express.Router();
+// The defined operations:
 
-// // middleware that is specific to this router
-// router.use((req, res, next) => {
-//   console.log('Time: ', Date.now())
-//   next()
-// })
-// // define the home page route
-// router.get('/', (req, res) => {
-//   res.send('Birds home page')
-// })
-// // define the about route
-// router.get('/about', (req, res) => {
-//   res.send('About birds')
-// })
+// readFile   - GET     locId/path
+// read       - GET     locId/path            "Range" header
+// ls         - GET     locId/path?ls
+// dir        - GET     locId/path?ls
+// readDir    - GET     locId/path?ls
+// pathExists - GET     locId/path?exists
+// stat       - GET     locId/path?stats
 
-// module.exports = router;
+// copy       - PUT     locId/path?copyFrom=locId/path
+// ensureFile - PUT     locId/path?ensureFile
+// ensureDir  - PUT     locId/path?ensureDir
+// mkdir      - PUT     locId/path?mkdir
+// move       - PUT     locId/path?moveFrom=locId/path
+// outputFile - PUT     locId/path                        file in the body
+// rename     - PUT     locId/path?renameFrom=locId/path
+// touch      - PUT     locId/path?touch
+// writeFile  - PUT     locId/path                        file in the body
 
-export function configureHttpApi(app: Express, options: {
+// write      - PATCH   locId/path      range in "Range" header; data in body
+
+// emptyDir   - DELETE  locId/path?keepDir
+// remove     - DELETE  locId/path
+
+export function configureHttpApi(app: Express, core: FavaCore, options: {
   routePrefix: string,
 }) {
 
   const logger = new Logger("HTTP");
 
-  const route = options.routePrefix + "/:location/*";
 
-  app.get(route, (req, res) => {
 
-    // const driveList = await list();
-    // console.log(inspect(driveList, { depth: undefined }));
+  const route = options.routePrefix + "/:locationId/*";
+
+  app.get(route, asyncHandler(async (req, res, next) => {
+
+    const locationId = req.params.locationId ?? "";
+    const path = req.params["0"] ?? "";
+
+    const isLs = req.query.ls !== undefined;
+    const isStats = req.query.stats !== undefined;
+    const isExists = req.query.exists !== undefined;
+
+    logger.debug(`GET`);
+    logger.debug(`Location ID: ${locationId}`);
+    logger.debug(`Path: ${path}`);
+    logger.debug(`flags: ls: ${isLs} stats: ${isStats} exists: ${isExists}`);
+
+    if (isLs) {
+      // core.ls()
+    }
 
     // req.body
     // req.headers
@@ -42,131 +66,41 @@ export function configureHttpApi(app: Express, options: {
     req.url
     res.json({
       route,
-      locationParam: req.params.location,
+      locationIdParam: req.params.locationId,
       reqMethod: req.method,
       reqOriginalUrl: req.originalUrl,
       reqPath: req.path,
       reqUrl: req.url,
       // reqRoute: req.route,
       // driveList,
+      params: req.params,
+      query: req.query,
     });
 
-  });
+  }));
+
+  app.put(route, asyncHandler(async (req, res, next) => {
+    // 
+  }));
+
+  app.patch(route, asyncHandler(async (req, res, next) => {
+    // 
+  }));
+
+  app.delete(route, asyncHandler(async (req, res, next) => {
+    // 
+  }));
 
 }
 
-// curl http://localhost:6131/api/c:/dev/_Hypericon/fava
-const res = {
-  "route": "/api/:location/*",
-  "locationParam": "c:",
+// curl "http://localhost:6131/api/C:/somewhere/else/file.ext?something&one=two"
+const testResponse = {
+  "route": "/api/:locationId/*",
+  "locationIdParam": "C:",
   "reqMethod": "GET",
-  "reqOriginalUrl": "/api/c:/dev/_Hypericon/fava",
-  "reqPath": "/api/c:/dev/_Hypericon/fava",
-  "reqUrl": "/api/c:/dev/_Hypericon/fava"
-}
-
-const r = {
-
-  "route": "/api/:location/*",
-  "locationParam": "locationwow",
-  "reqMethod": "GET",
-  "reqOriginalUrl": "/api/locationwow/bum/whole/piss.txt",
-  "reqPath": "/api/locationwow/bum/whole/piss.txt",
-  "reqUrl": "/api/locationwow/bum/whole/piss.txt",
-
-  "driveList": [
-    {
-      "enumerator": "USBSTOR",
-      "busType": "USB",
-      "busVersion": "2.0",
-      "device": "\\\\.\\PhysicalDrive3",
-      "devicePath": null,
-      "raw": "\\\\.\\PhysicalDrive3",
-      "description": "Samsung Flash Drive FIT USB Device",
-      "partitionTableType": "mbr",
-      "error": null,
-      "size": 256641603584,
-      "blockSize": 512,
-      "logicalBlockSize": 512,
-      "mountpoints": [{ "path": "F:\\" }],
-      "isReadOnly": false,
-      "isSystem": false,
-      "isVirtual": false,
-      "isRemovable": true,
-      "isCard": false,
-      "isSCSI": false,
-      "isUSB": true,
-      "isUAS": false
-    },
-    {
-      "enumerator": "SCSI",
-      "busType": "SATA",
-      "busVersion": "2.0",
-      "device": "\\\\.\\PhysicalDrive1",
-      "devicePath": null,
-      "raw": "\\\\.\\PhysicalDrive1",
-      "description": "Samsung SSD 870 EVO 2TB",
-      "partitionTableType": "gpt",
-      "error": null,
-      "size": 2000398934016,
-      "blockSize": 512,
-      "logicalBlockSize": 512,
-      "mountpoints": [{ "path": "H:\\" }],
-      "isReadOnly": false,
-      "isSystem": false,
-      "isVirtual": false,
-      "isRemovable": true,
-      "isCard": false,
-      "isSCSI": true,
-      "isUSB": false,
-      "isUAS": false
-    },
-    {
-      "enumerator": "SCSI",
-      "busType": "INVALID",
-      "busVersion": "2.0",
-      "device": "\\\\.\\PhysicalDrive2",
-      "devicePath": null,
-      "raw": "\\\\.\\PhysicalDrive2",
-      "description": "Samsung SSD 970 EVO 1TB",
-      "partitionTableType": "gpt",
-      "error": null,
-      "size": 1000204886016,
-      "blockSize": 4096,
-      "logicalBlockSize": 512,
-      "mountpoints": [{ "path": "C:\\" }],
-      "isReadOnly": false,
-      "isSystem": true,
-      "isVirtual": false,
-      "isRemovable": false,
-      "isCard": false,
-      "isSCSI": true,
-      "isUSB": false,
-      "isUAS": false
-    },
-    {
-      "enumerator": "SCSI",
-      "busType": "SATA",
-      "busVersion": "2.0",
-      "device": "\\\\.\\PhysicalDrive0",
-      "devicePath": null,
-      "raw": "\\\\.\\PhysicalDrive0",
-      "description": "Samsung SSD 860 EVO 2TB",
-      "partitionTableType": "gpt",
-      "error": null,
-      "size": 2000398934016,
-      "blockSize": 512,
-      "logicalBlockSize": 512,
-      "mountpoints": [{ "path": "G:\\" },
-      { "path": "O:\\" }],
-      "isReadOnly": false,
-      "isSystem": false,
-      "isVirtual": false,
-      "isRemovable": true,
-      "isCard": false,
-      "isSCSI": true,
-      "isUSB": false,
-      "isUAS": false
-    }
-  ]
+  "reqOriginalUrl": "/api/C:/somewhere/else/file.ext?something&one=two",
+  "reqPath": "/api/C:/somewhere/else/file.ext",
+  "reqUrl": "/api/C:/somewhere/else/file.ext?something&one=two",
+  "params": { "0": "somewhere/else/file.ext", "locationId": "C:" },
+  "query": { "something": "", "one": "two" }
 }

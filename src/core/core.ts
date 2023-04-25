@@ -1,54 +1,9 @@
+import { CopyOptions, FileData, MoveOptions, ReadBytesOptions, ReadFileOptions, WriteBytesOptions, WriteFileOptions } from "./adapters/adapter.interface";
+import { FavaFsAdapter } from "./adapters/fs-adapter";
 import { FavaLocation } from "./interfaces/location.interface";
 import { Logger } from "./utils/logger";
 
-export interface CopyOptions {
-  /** Overwrite any destination files */
-  overwrite?: boolean,
-}
-
-export interface MoveOptions {
-  /** Overwrite any destination files */
-  overwrite?: boolean,
-}
-
-export interface ReadBytesOptions {
-  /** The buffer to write the data to */
-  buffer?: Buffer,
-  /** The offset within the buffer to start writing at */
-  offset?: number,
-  /** The number of bytes to read */
-  length?: number,
-  /** The position in the file to start reading at */
-  position?: number,
-}
-
-export interface ReadFileOptions {
-  /** To read the file as a string specify an encoding */
-  encoding?: string,
-  // filesystem flags? string?
-}
-
-export interface WriteBytesOptions {
-  /** When the data is a string, specify the encoding (default: "utf8") */
-  encoding?: string,
-  // mode? integer?
-  // filesystem flags? string?
-  /** When the data is a buffer, specify the offset within the buffer to start writing from */
-  offset?: number,
-  /** When the data is a buffer, specify number of bytes to write */
-  length?: number,
-  /** Specify the position within the file at which to start writing */
-  position?: number,
-}
-
-export interface WriteFileOptions {
-  /** When the data is a string, specify the encoding (default: "utf8") */
-  encoding?: string,
-  // mode? integer?
-  // filesystem flags? string?
-}
-
-export type FileData = string | Buffer | Uint8Array;
+const fsAdapter = new FavaFsAdapter();
 
 export class FavaCore {
 
@@ -58,56 +13,108 @@ export class FavaCore {
 
   constructor() {}
 
-  // overwrite? default false
-  async copy(srcLocId: string, srcPath: string, destLocId: string, destPath: string, options?: CopyOptions) { }
-
-  // alias for ls()
-  async dir(locId: string, dirPath: string) { }
-
-  async emptyDir(locId: string, dirPath: string) { }
-
-  async ensureFile(locId: string, filePath: string) { }
-
-  // is recursive
-  async ensureDir(locId: string, dirPath: string) { }
-
-  async ls(locId: string, dirPath: string) { }
-
-  // calls ensureDir
-  // is recursive
-  async mkdir(locId: string, dirPath: string) { }
-
-  // overwrite? default false
-  async move(srcLocId: string, srcPath: string, destLocId: string, destPath: string, options?: MoveOptions) { }
-
-  // also ensures dir
-  async outputFile(locId: string, filePath: string, data: FileData, options?: WriteFileOptions) { }
-
-  async pathExists(locId: string, path: string): Promise<boolean> {
-    return false;
+  findLocation(locId: string): FavaLocation {
+    const location = this.locations.find(loc => loc.id === locId);
+    if (!location) throw new Error(`No location with ID: ${locId}`);
+    return location;
   }
 
-  // fails if file doesn't exist
-  async read(locId: string, filePath: string, options?: ReadBytesOptions) { }
+  async copy(srcLocId: string, srcPath: string, destLocId: string, destPath: string, options?: CopyOptions) {
+    const srcLoc = this.findLocation(srcLocId);
+    const destLoc = this.findLocation(destLocId);
+    return fsAdapter.copy(srcLoc, srcPath, destLoc, destPath, options);
+  }
 
-  // Alias for ls()
-  async readDir(locId: string, dirPath: string) { }
 
-  // fails if file doesn't exist
-  async readFile(locId: string, filePath: string, options?: ReadFileOptions) { }
+  async dir(locId: string, dirPath: string) {
+    const loc = this.findLocation(locId);
+    return fsAdapter.ls(loc, dirPath);
+  }
 
-  async remove(locId: string, path: string) { }
+  async emptyDir(locId: string, dirPath: string) {
+    const loc = this.findLocation(locId);
+    return fsAdapter.emptyDir(loc, dirPath);
+  }
 
-  async rename(locId: string, oldPath: string, newPath: string) { }
+  async ensureFile(locId: string, filePath: string) {
+    const loc = this.findLocation(locId);
+    return fsAdapter.ensureFile(loc, filePath);
+  }
 
-  async stat(locId: string, path: string) { }
+  async ensureDir(locId: string, dirPath: string) {
+    const loc = this.findLocation(locId);
+    return fsAdapter.ensureDir(loc, dirPath);
+  }
 
-  // calls ensureFile
-  async touch(locId: string, filePath: string) { }
+  async ls(locId: string, dirPath: string) {
+    const loc = this.findLocation(locId);
+    return fsAdapter.ls(loc, dirPath);
+  }
 
-  // fails if file doesn't exist
-  async write(locId: string, filePath: string, data: FileData, options?: WriteBytesOptions) { }
+  async mkdir(locId: string, dirPath: string) {
+    const loc = this.findLocation(locId);
+    return fsAdapter.ensureDir(loc, dirPath);
+  }
 
-  async writeFile(locId: string, filePath: string, data: FileData, options?: WriteFileOptions) { }
+  async move(srcLocId: string, srcPath: string, destLocId: string, destPath: string, options?: MoveOptions) {
+    const srcLoc = this.findLocation(srcLocId);
+    const destLoc = this.findLocation(destLocId);
+    return fsAdapter.move(srcLoc, srcPath, destLoc, destPath, options);
+  }
+
+  async outputFile(locId: string, filePath: string, data: FileData, options?: WriteFileOptions) {
+    const loc = this.findLocation(locId);
+    return fsAdapter.outputFile(loc, filePath, data, options);
+  }
+
+  async pathExists(locId: string, path: string): Promise<boolean> {
+    const loc = this.findLocation(locId);
+    return fsAdapter.pathExists(loc, path);
+  }
+
+  async read(locId: string, filePath: string, options?: ReadBytesOptions) {
+    const loc = this.findLocation(locId);
+    return fsAdapter.read(loc, filePath, options);
+  }
+
+  async readDir(locId: string, dirPath: string) {
+    const loc = this.findLocation(locId);
+    return fsAdapter.ls(loc, dirPath);
+  }
+
+  async readFile(locId: string, filePath: string, options?: ReadFileOptions) {
+    const loc = this.findLocation(locId);
+    return fsAdapter.readFile(loc, filePath, options);
+  }
+
+  async remove(locId: string, path: string) {
+    const loc = this.findLocation(locId);
+    return fsAdapter.remove(loc, path);
+  }
+
+  async rename(locId: string, oldPath: string, newPath: string) {
+    const loc = this.findLocation(locId);
+    return fsAdapter.rename(loc, oldPath, newPath);
+  }
+
+  async stat(locId: string, path: string) {
+    const loc = this.findLocation(locId);
+    return fsAdapter.stat(loc, path);
+  }
+
+  async touch(locId: string, filePath: string) {
+    const loc = this.findLocation(locId);
+    return fsAdapter.ensureFile(loc, filePath)
+  }
+
+  async write(locId: string, filePath: string, data: FileData, options?: WriteBytesOptions) {
+    const loc = this.findLocation(locId);
+    return fsAdapter.write(loc, filePath, data, options);
+  }
+
+  async writeFile(locId: string, filePath: string, data: FileData, options?: WriteFileOptions) {
+    const loc = this.findLocation(locId);
+    return fsAdapter.writeFile(loc, filePath, data, options);
+  }
 
 }
