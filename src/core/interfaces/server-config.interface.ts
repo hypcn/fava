@@ -1,7 +1,7 @@
 import { Server } from "http";
 import { FavaLogger } from "./logger.interface";
 import { FavaLocation } from "./location.interface";
-import { LogLevel } from "../logger";
+import { LogLevel } from "../utils/logger";
 
 /** Configure whether an interface is enabled, and if so, with what capabilities */
 export type FavaServerInterfaceConfig =

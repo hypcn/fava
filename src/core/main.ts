@@ -1,15 +1,17 @@
-import { FavaServerConfig } from "./interfaces/server-config.interface";
 import express, { Express } from "express";
 import { Server, createServer } from 'http';
 import { WebSocketServer } from 'ws';
+import { FavaCore } from "./core";
 import { configureHttpApi } from "./http-api";
-import { FavaLocation } from "./interfaces/location.interface";
-import { FavaUtils } from "./utils";
-import { Logger } from "./logger";
+import { FavaServerConfig } from "./interfaces/server-config.interface";
+import { Logger } from "./utils/logger";
+import { FavaUtils } from "./utils/utils";
 
 const DEFAULT_PORT = 6131;
 
-export class FavaServer {
+export class Fava {
+
+  private core: FavaCore = new FavaCore();
 
   private server!: Server;
   private app!: Express;
@@ -19,9 +21,7 @@ export class FavaServer {
   private wsEnabled: boolean = false;
   private uiEnabled: boolean = false;
 
-  private locations: FavaLocation[] = [];
-
-  private logger = new Logger("Fava");
+  private logger = new Logger("Main");
 
   constructor(config: FavaServerConfig) {
 
@@ -29,23 +29,23 @@ export class FavaServer {
       Logger.logLevel = config.logLevel;
     }
     if (config.logger) {
-      this.logger = config.logger as Logger;
+      Logger.customLogger = config.logger;
     }
 
     this.init(config);
 
   }
 
-  async init(config: FavaServerConfig) {
+  private async init(config: FavaServerConfig) {
 
     if (!config.locations || config.locations.length === 0) {
       this.logger.log(`No locations specified; discovering local drives...`);
-      this.locations = await FavaUtils.findDefaultLocations();
-      this.logger.log(`Discovered ${this.locations.length} local drives`);
-      this.logger.debug(`Local drive locations:`, this.locations);
+      this.core.locations = await FavaUtils.findDefaultLocations();
+      this.logger.log(`Discovered ${this.core.locations.length} local drives`);
+      this.logger.debug(`Local drive locations:`, this.core.locations);
     } else {
-      this.locations = config.locations;
-      this.logger.log(`${this.locations.length} locations specified`);
+      this.core.locations = config.locations;
+      this.logger.log(`${this.core.locations.length} locations specified`);
     }
 
     if (config.server) {
@@ -125,5 +125,7 @@ export class FavaServer {
     }
 
   }
+
+  // TODO: async API here for consumption by application when using Fava as a library
 
 }

@@ -2,9 +2,9 @@
 
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
-import { FavaServer } from "../core/server";
+import { Fava } from "../core/main";
 import { FavaServerInterfaceConfig } from "../core/interfaces/server-config.interface";
-import { LogLevel } from "../core/logger";
+import { LogLevel } from "../core/utils/logger";
 
 const argsParser = yargs(hideBin(process.argv))
   .usage(`USAGE:\nTODO`)
@@ -38,7 +38,7 @@ async function cli() {
   // console.log("argv", argv);
 
   // Create the server with settings specified in the CLI args
-  const Fava = new FavaServer({
+  const fava = new Fava({
     http: argAsInterfaceConfig(argv.http),
     ws: argAsInterfaceConfig(argv.ws),
     ui: argAsInterfaceConfig(argv.ui),

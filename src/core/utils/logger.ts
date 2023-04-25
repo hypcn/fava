@@ -1,4 +1,4 @@
-import { FavaLogger } from "./interfaces/logger.interface";
+import { FavaLogger } from "../interfaces/logger.interface";
 import chalk from "chalk";
 import { format } from "util";
 
@@ -15,14 +15,17 @@ const DEFAULT_LOGGING_OPTIONS: LoggingOptions = {
   timestamp: true,
 };
 
-export class Logger implements FavaLogger {
+/** @internal */
+export class Logger {
 
   private options: LoggingOptions;
 
   static logLevel: LogLevel = "log";
 
+  static customLogger: FavaLogger | undefined;
+
   constructor(opts?: LoggingOptions | string) {
-    this.options = DEFAULT_LOGGING_OPTIONS;
+    this.options = JSON.parse(JSON.stringify(DEFAULT_LOGGING_OPTIONS));
     if (opts) {
       if (typeof opts === "string") this.options.context = opts;
       if (typeof opts === "object") this.options = opts;
@@ -47,7 +50,27 @@ export class Logger implements FavaLogger {
 
   static logMessages(level: LogLevel, opts: LoggingOptions | undefined, ...msgs: any[]) {
 
+    if (this.customLogger) {
+      return this.customLogger[level](...msgs);
+    }
+
     if (!this.levelSatisfiesLevel(level, this.logLevel)) return;
+
+    msgs = Logger.addMsgsPrefixes(level, opts, ...msgs)
+
+    const levelColourFn = {
+      debug: chalk.magentaBright,
+      log: chalk.cyanBright,
+      warn: chalk.yellowBright,
+      error: chalk.redBright,
+    };
+    const colourFn = levelColourFn[level];
+
+    console.log(colourFn(format(...msgs)));
+
+  }
+
+  static addMsgsPrefixes(level: LogLevel, opts: LoggingOptions | undefined, ...msgs: any[]): any[] {
 
     const options: LoggingOptions = opts ?? DEFAULT_LOGGING_OPTIONS;
 
@@ -64,16 +87,7 @@ export class Logger implements FavaLogger {
       msgs.unshift(`${ts}` + space);
     }
 
-    const levelColourFn = {
-      debug: chalk.magentaBright,
-      log: chalk.cyanBright,
-      warn: chalk.yellowBright,
-      error: chalk.redBright,
-    };
-    const colourFn = levelColourFn[level];
-
-    console.log(colourFn(format(...msgs)));
-
+    return msgs;
   }
 
   static levelSatisfiesLevel(test: LogLevel, against: LogLevel) {

@@ -2,6 +2,7 @@ import express, { Express } from "express";
 import urlJoin from "url-join";
 import { list } from "drivelist";
 import { inspect } from "util";
+import { Logger } from "./utils/logger";
 
 // const router = express.Router();
 
@@ -24,6 +25,8 @@ import { inspect } from "util";
 export function configureHttpApi(app: Express, options: {
   routePrefix: string,
 }) {
+
+  const logger = new Logger("HTTP");
 
   const route = options.routePrefix + "/:location/*";
 
