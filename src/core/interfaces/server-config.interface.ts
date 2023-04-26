@@ -1,6 +1,6 @@
 import { Server } from "http";
 import { FavaLogger } from "./logger.interface";
-import { FavaLocation } from "./location.interface";
+import { FavaLocation } from "../../shared";
 import { LogLevel } from "../utils/logger";
 
 /** Configure whether an interface is enabled, and if so, with what capabilities */
@@ -23,6 +23,9 @@ export interface FavaServerConfig {
    * @default 6131
    */
   port?: number,
+
+  /** Optionally specify a prefix for HTTP API routes */
+  routePrefix?: string,
   
   /**
    * 

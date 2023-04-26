@@ -1,4 +1,4 @@
-import { FavaLocationFS } from "../interfaces/location.interface";
+import { FavaLocationFS } from "../../shared";
 import { list } from "drivelist";
 
 export class FavaUtils {

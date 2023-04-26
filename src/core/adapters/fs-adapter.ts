@@ -1,9 +1,9 @@
 import { join, parse } from "path";
-import { FavaLocationFS } from "../interfaces";
-import { CopyOptions, MoveOptions, FileData, WriteFileOptions, ReadBytesOptions, ReadFileOptions, WriteBytesOptions, FavaAdapter, DirInfo, ReadFileResult, WriteBytesResult, FileInfo } from "./adapter.interface";
+import { CopyOptions, MoveOptions, FileData, WriteFileOptions, ReadBytesOptions, ReadFileOptions, WriteBytesOptions, FavaAdapter, ReadFileResult, WriteBytesResult } from "./adapter.interface";
 import * as fse from "fs-extra";
 import { Logger } from "../utils/logger";
 import { FavaUtils } from "../utils/utils";
+import { DirInfo, FavaLocationFS, FileInfo } from "../../shared";
 
 export class FavaFsAdapter implements FavaAdapter<FavaLocationFS> {
 
@@ -23,7 +23,7 @@ export class FavaFsAdapter implements FavaAdapter<FavaLocationFS> {
     const fullSrcPath = join(srcLoc.root, srcPath);
     const fullDestPath = join(destLoc.root, destPath);
     return fse.copy(fullSrcPath, fullDestPath, {
-      overwrite: options?.overwrite,
+      overwrite: options?.overwrite ?? false,
       errorOnExist: true,
     });
   }
@@ -65,7 +65,7 @@ export class FavaFsAdapter implements FavaAdapter<FavaLocationFS> {
     const fullSrcPath = join(srcLoc.root, srcPath);
     const fullDestPath = join(destLoc.root, destPath);
     return fse.move(fullSrcPath, fullDestPath, {
-      overwrite: options?.overwrite,
+      overwrite: options?.overwrite ?? false,
       // dereference,
     });
   }

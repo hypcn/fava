@@ -5,14 +5,19 @@ import { inspect } from "util";
 import { Logger } from "./utils/logger";
 import { FavaCore } from "./core";
 import asyncHandler from "express-async-handler";
+import { PathExistsResult, GetLocationsResult, UpdateResult, ReadDirResult, GetStatsResult } from "../shared";
+
+const logger = new Logger("HTTP");
+
+// GET locations
 
 // The defined operations:
 
 // readFile   - GET     locId/path
 // read       - GET     locId/path            "Range" header
-// ls         - GET     locId/path?ls
-// dir        - GET     locId/path?ls
-// readDir    - GET     locId/path?ls
+// ls         - GET     locId/path?readDir
+// dir        - GET     locId/path?readDir
+// readDir    - GET     locId/path?readDir
 // pathExists - GET     locId/path?exists
 // stat       - GET     locId/path?stats
 
@@ -20,7 +25,7 @@ import asyncHandler from "express-async-handler";
 // ensureFile - PUT     locId/path?ensureFile
 // ensureDir  - PUT     locId/path?ensureDir
 // move       - PUT     locId/path?moveFrom=locId/path
-// rename     - PUT     locId/path?renameFrom=locId/path
+// rename     - PUT     locId/path?renameFrom=path
 // writeFile  - PUT     locId/path                        file in the body
 
 // append     - PATCH   locId/path?append       data in body
@@ -45,36 +50,57 @@ export function configureHttpApi(app: Express, core: FavaCore, options: {
   routePrefix: string,
 }) {
 
-  const logger = new Logger("HTTP");
+  const locationsRoute = options.routePrefix + "/locations";
 
-  const route = options.routePrefix + "/:locationId/*";
+  app.get(locationsRoute, asyncHandler(async (req, res, next) => {
+    logger.debug(`GET locations`);
+    const response: GetLocationsResult = {
+      locations: core.locations,
+    };
+    res.json(response);
+  }));
 
-  app.get(route, asyncHandler(async (req, res, next) => {
+  const apiRoute = options.routePrefix + "/:locationId/*";
+
+  app.get(apiRoute, asyncHandler(async (req, res, next) => {
 
     const locationId = req.params.locationId ?? "";
     const path = req.params["0"] ?? "";
 
-    const isLs = req.query.ls !== undefined;
+    const isReadDir = req.query.readDir !== undefined;
     const isStats = req.query.stats !== undefined;
     const isExists = req.query.exists !== undefined;
 
-    if (isLs) {
-      logger.debug(`GET: ls: ${locationId} / ${path}`);
-      const dirinfo = await core.ls(locationId, path);
-      // res.status()
-      res.json(dirinfo);
+    // TODO: Range header
 
-    } else if (isStats) {
+    if (isReadDir) {
+      logger.debug(`GET: readDir: ${locationId} / ${path}`);
+      const dirInfo = await core.readDir(locationId, path);
+      const result: ReadDirResult = {
+        dirInfo,
+      };
+      res.json(result);
+    }
+    
+    else if (isStats) {
       logger.debug(`GET: stats: ${locationId} / ${path}`);
       const fileInfo = await core.stat(locationId, path);
-      res.json(fileInfo);
-
-    } else if (isExists) {
+      const result: GetStatsResult = {
+        fileInfo,
+      };
+      res.json(result);
+    }
+    
+    else if (isExists) {
       logger.debug(`GET: exists: ${locationId} / ${path}`);
       const exists = await core.pathExists(locationId, path);
-      res.json({ exists: exists });
-
-    } else {
+      const result: PathExistsResult = {
+        exists,
+      };
+      res.json(result);
+    }
+    
+    else {
       logger.debug(`GET: read: ${locationId} / ${path}`);
       const file = await core.readFile(locationId, path);
       res.send(file);
@@ -84,7 +110,7 @@ export function configureHttpApi(app: Express, core: FavaCore, options: {
 
   }));
 
-  app.put(route, asyncHandler(async (req, res, next) => {
+  app.put(apiRoute, asyncHandler(async (req, res, next) => {
 
     const locationId = req.params.locationId ?? "";
     const path = req.params["0"] ?? "";
@@ -95,44 +121,73 @@ export function configureHttpApi(app: Express, core: FavaCore, options: {
       const from = queryLocIdAndPath(req, "moveFrom");
       logger.debug(`PUT: move: ${from.locId} / ${from.path} -> ${locationId} / ${path}`);
       await core.move(from.locId, from.path, locationId, path, { overwrite: flags.overwrite });
-      res.json({ move: "done" });
-
-    } else if (flags.copyFrom) {
+      const result: UpdateResult = {
+        update: "move",
+        done: true,
+      };
+      res.json(result);
+    }
+    
+    else if (flags.copyFrom) {
       const from = queryLocIdAndPath(req, "copyFrom");
       logger.debug(`PUT: copy: ${from.locId} / ${from.path} -> ${locationId} / ${path}`);
       await core.copy(from.locId, from.path, locationId, path, { overwrite: flags.overwrite });
-      res.json({ copy: "done" });
-
-    } else if (flags.renameFrom) {
+      const result: UpdateResult = {
+        update: "copy",
+        done: true,
+      };
+      res.json(result);
+    }
+    
+    else if (flags.renameFrom) {
       const from = req.query.renameFrom;
       if (!from || typeof from !== "string") {
         throw new Error(`Rename source must be a path`);
       }
       logger.debug(`PUT: rename: ${locationId} / ${from} -> ${locationId} / ${path}`);
       await core.rename(locationId, from, path);
-      res.json({ rename: "done" });
-
-    } else if (flags.ensureDir) {
+      const result: UpdateResult = {
+        update: "rename",
+        done: true,
+      };
+      res.json(result);
+    }
+    
+    else if (flags.ensureDir) {
       logger.debug(`PUT: ensureDir: ${locationId} / ${path}`);
       await core.ensureDir(locationId, path);
-      res.json({ ensureDir: "done" });
-
-    } else if (flags.ensureFile) {
+      const result: UpdateResult = {
+        update: "ensureDir",
+        done: true,
+      };
+      res.json(result);
+    }
+    
+    else if (flags.ensureFile) {
       logger.debug(`PUT: ensureFile: ${locationId} / ${path}`);
       await core.ensureFile(locationId, path);
-      res.json({ ensureFile: "done" });
-
-    } else {
+      const result: UpdateResult = {
+        update: "ensureFile",
+        done: true,
+      };
+      res.json(result);
+    }
+    
+    else {
       logger.debug(`PUT: write: ${locationId} / ${path}`);
       logger.debug(`PUT: write body: ${body}`);
-      await core.outputFile(locationId, path, body, { });
-      res.json({ write: "done" });
+      await core.outputFile(locationId, path, body, {});
+      const result: UpdateResult = {
+        update: "write",
+        done: true,
+      };
+      res.json(result);
     }
 
   }));
 
-  app.patch(route, asyncHandler(async (req, res, next) => {
-    
+  app.patch(apiRoute, asyncHandler(async (req, res, next) => {
+
     const locationId = req.params.locationId ?? "";
     const path = req.params["0"] ?? "";
     const body = req.body;
@@ -141,19 +196,30 @@ export function configureHttpApi(app: Express, core: FavaCore, options: {
 
     if (isAppend) {
       logger.debug(`PATCH: append: ${locationId} / ${path}`);
-      await core.append(locationId, path, body, { });
-      res.json({ append: "done" });
+      await core.append(locationId, path, body, {});
+      const result: UpdateResult = {
+        update: "append",
+        done: true,
+      };
+      res.json(result);
+    }
 
-    } else {
+    else {
       logger.debug(`PATCH: write: ${locationId} / ${path}`);
-      await core.write(locationId, path, body, { });
-      res.json({ write: "done" });
+      await core.write(locationId, path, body, {
+        // range?
+      });
+      const result: UpdateResult = {
+        update: "write",
+        done: true,
+      };
+      res.json(result);
     }
 
   }));
 
-  app.delete(route, asyncHandler(async (req, res, next) => {
-    
+  app.delete(apiRoute, asyncHandler(async (req, res, next) => {
+
     const locationId = req.params.locationId ?? "";
     const path = req.params["0"] ?? "";
 
@@ -162,14 +228,23 @@ export function configureHttpApi(app: Express, core: FavaCore, options: {
     if (isEmptyDir) {
       logger.debug(`DELETE: emptyDir: ${locationId} / ${path}`);
       await core.emptyDir(locationId, path);
-      res.json({ emptyDir: "done" });
+      const result: UpdateResult = {
+        update: "emptyDir",
+        done: true,
+      };
+      res.json(result);
+    }
 
-    } else {
+    else {
       logger.debug(`DELETE: remove: ${locationId} / ${path}`);
       await core.remove(locationId, path);
-      res.json({ remove: "done" });
+      const result: UpdateResult = {
+        update: "remove",
+        done: true,
+      };
+      res.json(result);
     }
-    
+
   }));
 
 }

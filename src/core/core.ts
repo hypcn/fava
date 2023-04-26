@@ -1,6 +1,6 @@
 import { CopyOptions, FileData, MoveOptions, ReadBytesOptions, ReadFileOptions, WriteBytesOptions, WriteFileOptions } from "./adapters/adapter.interface";
 import { FavaFsAdapter } from "./adapters/fs-adapter";
-import { FavaLocation } from "./interfaces/location.interface";
+import { FavaLocation } from "../shared";
 import { Logger } from "./utils/logger";
 
 const fsAdapter = new FavaFsAdapter();
@@ -12,6 +12,10 @@ export class FavaCore {
   locations: FavaLocation[] = [];
 
   constructor() {}
+
+  getLocations(): FavaLocation[] {
+    return this.locations;
+  }
 
   findLocation(locId: string): FavaLocation {
     const location = this.locations.find(loc => loc.id === locId);

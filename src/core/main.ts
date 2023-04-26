@@ -6,9 +6,10 @@ import { configureHttpApi } from "./http-api";
 import { FavaServerConfig } from "./interfaces/server-config.interface";
 import { Logger } from "./utils/logger";
 import { FavaUtils } from "./utils/utils";
-import { FavaLocation } from "./interfaces/location.interface";
+import { FavaLocation } from "../shared/location.interface";
 import { CopyOptions, FileData, MoveOptions, ReadBytesOptions, ReadFileOptions, WriteBytesOptions, WriteFileOptions } from "./adapters/adapter.interface";
 import { configureErrorHandler, configureMiddleware } from "./middleware";
+import urlJoin from "url-join";
 
 const DEFAULT_PORT = 6131;
 
@@ -66,7 +67,7 @@ export class Fava {
 
     if (config.http) {
       configureHttpApi(this.app, this.core, {
-        routePrefix: "/api",
+        routePrefix: config.routePrefix ? urlJoin(config.routePrefix, "/api") : "/api",
       });
       this.logger.log(`Configured HTTP API`);
     } else {

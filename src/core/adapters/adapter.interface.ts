@@ -1,4 +1,4 @@
-import { FavaLocation } from "../interfaces";
+import { DirInfo, FavaLocation, FileInfo } from "../../shared";
 
 export interface CopyOptions {
   /** Overwrite any destination files */
@@ -54,38 +54,6 @@ export interface WriteFileOptions {
 }
 
 export type FileData = string | Buffer | Uint8Array;
-
-export interface DirInfo {
-  dir: FileInfo,
-  files: FileInfo[],
-}
-
-export interface FileInfo {
-  /** The full file path, including the directory path within the location, and full filename with extension */
-  fullpath: string,
-  /** The directory path within the location, without the filename */
-  dirpath: string,
-  /** The filename with extension */
-  filename: string,
-  /** The name of the file, excluding the extension */
-  basename: string,
-  /** The file extension, if any, including the leading "." */
-  ext: string,
-
-  /** The size in bytes */
-  size: number,
-  /** If the item is a directory */
-  isDir: boolean,
-
-  /** When the file was created, as millisecond epoch timestamp */
-  created: number,
-  /** When the contents were modified, as millisecond epoch timestamp */
-  modified: number,
-  /** When some file metadata changed, as millisecond epoch timestamp */
-  changed: number,
-  /** When the file was last read, as millisecond epoch timestamp */
-  accessed: number,
-}
 
 export interface FavaAdapter<T extends FavaLocation> {
 
