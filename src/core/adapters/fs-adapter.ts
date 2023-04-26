@@ -3,6 +3,7 @@ import { FavaLocationFS } from "../interfaces";
 import { CopyOptions, MoveOptions, FileData, WriteFileOptions, ReadBytesOptions, ReadFileOptions, WriteBytesOptions, FavaAdapter, DirInfo, ReadFileResult, WriteBytesResult, FileInfo } from "./adapter.interface";
 import * as fse from "fs-extra";
 import { Logger } from "../utils/logger";
+import { FavaUtils } from "../utils/utils";
 
 export class FavaFsAdapter implements FavaAdapter<FavaLocationFS> {
 
@@ -104,11 +105,11 @@ export class FavaFsAdapter implements FavaAdapter<FavaLocationFS> {
   async stat(loc: FavaLocationFS, path: string) {
     const fullPath = join(loc.root, path);
     const stat = await fse.stat(fullPath);
-    
+
     const parsedPath = parse(fullPath);
     const fileInfo: FileInfo = {
-      fullpath: fullPath,
-      dirpath: parsedPath.dir,
+      fullpath: FavaUtils.slash(fullPath),
+      dirpath: FavaUtils.slash(parsedPath.dir),
       filename: parsedPath.base,
       basename: parsedPath.name,
       ext: parsedPath.ext,

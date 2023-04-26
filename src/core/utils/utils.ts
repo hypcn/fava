@@ -30,4 +30,13 @@ export class FavaUtils {
 
   }
 
+  /**
+   * Convert backslashes to forward slashes
+   * @param s 
+   * @returns 
+   */
+  static slash(s: string): string {
+    return s.replace(/\\/g, "/");
+  }
+
 }
