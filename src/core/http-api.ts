@@ -19,25 +19,33 @@ import asyncHandler from "express-async-handler";
 // copy       - PUT     locId/path?copyFrom=locId/path
 // ensureFile - PUT     locId/path?ensureFile
 // ensureDir  - PUT     locId/path?ensureDir
-// mkdir      - PUT     locId/path?mkdir
 // move       - PUT     locId/path?moveFrom=locId/path
-// outputFile - PUT     locId/path                        file in the body
 // rename     - PUT     locId/path?renameFrom=locId/path
-// touch      - PUT     locId/path?touch
 // writeFile  - PUT     locId/path                        file in the body
 
-// write      - PATCH   locId/path      range in "Range" header; data in body
+// append     - PATCH   locId/path?append       data in body
+// write      - PATCH   locId/path              data in body; range in "Range" header
 
-// emptyDir   - DELETE  locId/path?keepDir
+// emptyDir   - DELETE  locId/path?emptyDir
 // remove     - DELETE  locId/path
+
+function putFlags(req: Request) {
+  return {
+    moveFrom: Boolean(req.query.moveFrom !== undefined),
+    copyFrom: Boolean(req.query.copyFrom !== undefined),
+    renameFrom: Boolean(req.query.renameFrom !== undefined),
+    ensureDir: Boolean(req.query.ensureDir !== undefined),
+    ensureFile: Boolean(req.query.ensureFile !== undefined),
+
+    overwrite: Boolean(req.query.overwrite !== undefined),
+  };
+}
 
 export function configureHttpApi(app: Express, core: FavaCore, options: {
   routePrefix: string,
 }) {
 
   const logger = new Logger("HTTP");
-
-
 
   const route = options.routePrefix + "/:locationId/*";
 
@@ -50,26 +58,24 @@ export function configureHttpApi(app: Express, core: FavaCore, options: {
     const isStats = req.query.stats !== undefined;
     const isExists = req.query.exists !== undefined;
 
-    // logger.debug(`GET`);
-    // logger.debug(`Location ID: ${locationId}`);
-    // logger.debug(`Path: ${path}`);
-    // logger.debug(`flags: ls: ${isLs} stats: ${isStats} exists: ${isExists}`);
-
     if (isLs) {
-      logger.debug(`GET:  ls: ${locationId} // ${path}`);
+      logger.debug(`GET: ls: ${locationId} / ${path}`);
       const dirinfo = await core.ls(locationId, path);
       // res.status()
       res.json(dirinfo);
+
     } else if (isStats) {
-      logger.debug(`GET:  stats: ${locationId} // ${path}`);
+      logger.debug(`GET: stats: ${locationId} / ${path}`);
       const fileInfo = await core.stat(locationId, path);
       res.json(fileInfo);
+
     } else if (isExists) {
-      logger.debug(`GET:  exists: ${locationId} // ${path}`);
+      logger.debug(`GET: exists: ${locationId} / ${path}`);
       const exists = await core.pathExists(locationId, path);
       res.json({ exists: exists });
+
     } else {
-      logger.debug(`GET:  read: ${locationId} // ${path}`);
+      logger.debug(`GET: read: ${locationId} / ${path}`);
       const file = await core.readFile(locationId, path);
       res.send(file);
     }
@@ -79,16 +85,107 @@ export function configureHttpApi(app: Express, core: FavaCore, options: {
   }));
 
   app.put(route, asyncHandler(async (req, res, next) => {
-    // 
+
+    const locationId = req.params.locationId ?? "";
+    const path = req.params["0"] ?? "";
+    const flags = putFlags(req);
+    const body = req.body;
+
+    if (flags.moveFrom) {
+      const from = queryLocIdAndPath(req, "moveFrom");
+      logger.debug(`PUT: move: ${from.locId} / ${from.path} -> ${locationId} / ${path}`);
+      await core.move(from.locId, from.path, locationId, path, { overwrite: flags.overwrite });
+      res.json({ move: "done" });
+
+    } else if (flags.copyFrom) {
+      const from = queryLocIdAndPath(req, "copyFrom");
+      logger.debug(`PUT: copy: ${from.locId} / ${from.path} -> ${locationId} / ${path}`);
+      await core.copy(from.locId, from.path, locationId, path, { overwrite: flags.overwrite });
+      res.json({ copy: "done" });
+
+    } else if (flags.renameFrom) {
+      const from = req.query.renameFrom;
+      if (!from || typeof from !== "string") {
+        throw new Error(`Rename source must be a path`);
+      }
+      logger.debug(`PUT: rename: ${locationId} / ${from} -> ${locationId} / ${path}`);
+      await core.rename(locationId, from, path);
+      res.json({ rename: "done" });
+
+    } else if (flags.ensureDir) {
+      logger.debug(`PUT: ensureDir: ${locationId} / ${path}`);
+      await core.ensureDir(locationId, path);
+      res.json({ ensureDir: "done" });
+
+    } else if (flags.ensureFile) {
+      logger.debug(`PUT: ensureFile: ${locationId} / ${path}`);
+      await core.ensureFile(locationId, path);
+      res.json({ ensureFile: "done" });
+
+    } else {
+      logger.debug(`PUT: write: ${locationId} / ${path}`);
+      logger.debug(`PUT: write body: ${body}`);
+      await core.outputFile(locationId, path, body, { });
+      res.json({ write: "done" });
+    }
+
   }));
 
   app.patch(route, asyncHandler(async (req, res, next) => {
-    // 
+    
+    const locationId = req.params.locationId ?? "";
+    const path = req.params["0"] ?? "";
+    const body = req.body;
+
+    const isAppend = req.query.append !== undefined;
+
+    if (isAppend) {
+      logger.debug(`PATCH: append: ${locationId} / ${path}`);
+      await core.append(locationId, path, body, { });
+      res.json({ append: "done" });
+
+    } else {
+      logger.debug(`PATCH: write: ${locationId} / ${path}`);
+      await core.write(locationId, path, body, { });
+      res.json({ write: "done" });
+    }
+
   }));
 
   app.delete(route, asyncHandler(async (req, res, next) => {
-    // 
+    
+    const locationId = req.params.locationId ?? "";
+    const path = req.params["0"] ?? "";
+
+    const isEmptyDir = req.query.emptyDir !== undefined;
+
+    if (isEmptyDir) {
+      logger.debug(`DELETE: emptyDir: ${locationId} / ${path}`);
+      await core.emptyDir(locationId, path);
+      res.json({ emptyDir: "done" });
+
+    } else {
+      logger.debug(`DELETE: remove: ${locationId} / ${path}`);
+      await core.remove(locationId, path);
+      res.json({ remove: "done" });
+    }
+    
   }));
+
+}
+
+function queryLocIdAndPath(req: Request, queryName: string) {
+
+  const queryValue = req.query[queryName];
+  if (!queryValue || typeof queryValue !== "string") {
+    throw new Error(`Query parameter missing or malformed: ${queryName}`);
+  }
+
+  const [locId, path] = queryValue.split("/");
+  return {
+    locId: locId,
+    path: path ?? "",
+  };
 
 }
 
