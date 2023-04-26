@@ -19,10 +19,10 @@ $ npm i @hypericon/fava
 
 Core
 
-- server HTTP API
+- ~~server HTTP API~~
 - server WS API
 - ~~server constructor with/without existing HTTP server~~
-- server serve web pages (different endpoints, API is default)
+- server serve web page (different endpoints, API is default)
 - ~~run server from cli~~
 - define auth requirements
   - implement them

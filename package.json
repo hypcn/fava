@@ -9,9 +9,12 @@
     "fava": "./dist/cli/cli.js"
   },
   "scripts": {
-    "dev": "tsc --watch --preserveWatchOutput",
-    "build": "rimraf dist && tsc",
-    "prepublishOnly": "npm run build",
+    "dev": "concurrently npm:dev-lib npm:dev-ui",
+    "dev-lib": "tsc --watch --preserveWatchOutput --project tsconfig.build.json",
+    "dev-ui": "vite",
+    "build": "rimraf dist && tsc --project tsconfig.build.json",
+    "build-ui": "vite build",
+    "prepublishOnly": "npm run build && npm run build-ui",
     "start": "node dist/cli/cli.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -31,8 +34,13 @@
     "@types/node": "^18.16.0",
     "@types/ws": "^8.5.4",
     "@types/yargs": "^17.0.24",
+    "autoprefixer": "^10.4.14",
+    "concurrently": "^8.0.1",
+    "postcss": "^8.4.23",
     "rimraf": "^5.0.0",
-    "typescript": "^5.0.4"
+    "tailwindcss": "^3.3.2",
+    "typescript": "^5.0.4",
+    "vite": "^4.3.3"
   },
   "files": [
     "dist"
