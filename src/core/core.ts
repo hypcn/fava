@@ -19,6 +19,11 @@ export class FavaCore {
     return location;
   }
 
+  async append(locId: string, filePath: string, data: FileData, options?: WriteFileOptions) {
+    const loc = this.findLocation(locId);
+    return fsAdapter.append(loc, filePath, data, options);
+  }
+
   async copy(srcLocId: string, srcPath: string, destLocId: string, destPath: string, options?: CopyOptions) {
     const srcLoc = this.findLocation(srcLocId);
     const destLoc = this.findLocation(destLocId);

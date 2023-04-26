@@ -9,6 +9,16 @@ export class FavaFsAdapter implements FavaAdapter<FavaLocationFS> {
 
   private logger = new Logger("FS Adapter");
 
+  async append(loc: FavaLocationFS, filePath: string, data: FileData, options?: WriteFileOptions): Promise<void> {
+    const path = join(loc.root, filePath);
+    await fse.appendFile(path, data, {
+      encoding: options?.encoding,
+      // flag,
+      // mode,
+      // signal,
+    });
+  }
+
   async copy(srcLoc: FavaLocationFS, srcPath: string, destLoc: FavaLocationFS, destPath: string, options?: CopyOptions): Promise<void> {
     const fullSrcPath = join(srcLoc.root, srcPath);
     const fullDestPath = join(destLoc.root, destPath);
@@ -129,6 +139,9 @@ export class FavaFsAdapter implements FavaAdapter<FavaLocationFS> {
   async write(loc: FavaLocationFS, filePath: string, data: FileData, options?: WriteBytesOptions): Promise<WriteBytesResult> {
     throw new Error("Not implemented: write()");
     // TODO
+
+    // fse.write()
+    
   }
 
   async writeFile(loc: FavaLocationFS, filePath: string, data: FileData, options?: WriteFileOptions): Promise<void> {

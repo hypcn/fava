@@ -89,6 +89,8 @@ export interface FileInfo {
 
 export interface FavaAdapter<T extends FavaLocation> {
 
+  append(loc: T, filePath: string, data: FileData, options?: WriteFileOptions): Promise<void>;
+
   copy(srcLoc: T, srcPath: string, destLoc: T, destPath: string, options?: CopyOptions): Promise<void>;
 
   // dir(loc: T, dirPath: string): Promise<DirInfo>;
