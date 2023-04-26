@@ -8,6 +8,7 @@ import { Logger } from "./utils/logger";
 import { FavaUtils } from "./utils/utils";
 import { FavaLocation } from "./interfaces/location.interface";
 import { CopyOptions, FileData, MoveOptions, ReadBytesOptions, ReadFileOptions, WriteBytesOptions, WriteFileOptions } from "./adapters/adapter.interface";
+import { configureErrorHandler, configureMiddleware } from "./middleware";
 
 const DEFAULT_PORT = 6131;
 
@@ -60,6 +61,7 @@ export class Fava {
     const startListening = !Boolean(config.server);
 
     this.app = express();
+    configureMiddleware(this.app);
     this.server.on("request", this.app);
 
     if (config.http) {
@@ -93,6 +95,9 @@ export class Fava {
       this.logger.warn(`Web UI disabled`);
     }
     this.uiEnabled = Boolean(config.ui);
+
+    // Add error handlers last
+    configureErrorHandler(this.app);
 
     // If the server was created by the library, start listening
     if (startListening) {
