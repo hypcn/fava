@@ -1,4 +1,4 @@
-import express, { Express } from "express";
+import express, { Express, Request, Response } from "express";
 import urlJoin from "url-join";
 import { list } from "drivelist";
 import { inspect } from "util";
@@ -50,32 +50,31 @@ export function configureHttpApi(app: Express, core: FavaCore, options: {
     const isStats = req.query.stats !== undefined;
     const isExists = req.query.exists !== undefined;
 
-    logger.debug(`GET`);
-    logger.debug(`Location ID: ${locationId}`);
-    logger.debug(`Path: ${path}`);
-    logger.debug(`flags: ls: ${isLs} stats: ${isStats} exists: ${isExists}`);
+    // logger.debug(`GET`);
+    // logger.debug(`Location ID: ${locationId}`);
+    // logger.debug(`Path: ${path}`);
+    // logger.debug(`flags: ls: ${isLs} stats: ${isStats} exists: ${isExists}`);
 
     if (isLs) {
-      // core.ls()
+      logger.debug(`GET:  ls: ${locationId} // ${path}`);
+      const dirinfo = await core.ls(locationId, path);
+      // res.status()
+      res.json(dirinfo);
+    } else if (isStats) {
+      logger.debug(`GET:  stats: ${locationId} // ${path}`);
+      const fileInfo = await core.stat(locationId, path);
+      res.json(fileInfo);
+    } else if (isExists) {
+      logger.debug(`GET:  exists: ${locationId} // ${path}`);
+      const exists = await core.pathExists(locationId, path);
+      res.json({ exists: exists });
+    } else {
+      logger.debug(`GET:  read: ${locationId} // ${path}`);
+      const file = await core.readFile(locationId, path);
+      res.send(file);
     }
 
-    // req.body
-    // req.headers
-    req.originalUrl
-    req.path
-    req.url
-    res.json({
-      route,
-      locationIdParam: req.params.locationId,
-      reqMethod: req.method,
-      reqOriginalUrl: req.originalUrl,
-      reqPath: req.path,
-      reqUrl: req.url,
-      // reqRoute: req.route,
-      // driveList,
-      params: req.params,
-      query: req.query,
-    });
+    // printTestMess(route, req, res);
 
   }));
 
@@ -90,6 +89,28 @@ export function configureHttpApi(app: Express, core: FavaCore, options: {
   app.delete(route, asyncHandler(async (req, res, next) => {
     // 
   }));
+
+}
+
+function printTestMess(route: string, req: Request, res: Response) {
+
+  // req.body
+  // req.headers
+  req.originalUrl
+  req.path
+  req.url
+  res.json({
+    route,
+    locationIdParam: req.params.locationId,
+    reqMethod: req.method,
+    reqOriginalUrl: req.originalUrl,
+    reqPath: req.path,
+    reqUrl: req.url,
+    // reqRoute: req.route,
+    // driveList,
+    params: req.params,
+    query: req.query,
+  });
 
 }
 
