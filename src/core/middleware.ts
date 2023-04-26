@@ -1,4 +1,4 @@
-import { Express, Request, Response } from "express";
+import { Express, Request, Response, json, raw, text, urlencoded } from "express";
 import { Logger } from "./utils/logger";
 import { format } from "util";
 import { FavaUtils } from "./utils/utils";
@@ -9,6 +9,11 @@ export function configureMiddleware(app: Express) {
   logger.debug(`Adding middleware...`);
 
   // No error handlers here
+
+  app.use(json({}));
+  app.use(raw({}));
+  app.use(text({}));
+  app.use(urlencoded({ extended: true }));
 
   logger.debug(`Added middleware`);
   return app;
