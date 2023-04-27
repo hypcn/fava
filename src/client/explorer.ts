@@ -1,4 +1,4 @@
-import { FavaLocation } from "../shared";
+import { FavaLocation, FileInfo } from "../shared";
 import { FavaClient } from "./client";
 
 export interface FavaExplorerConfig {
@@ -11,7 +11,13 @@ export class FavaExplorer {
 
   location: FavaLocation | undefined;
 
-  currentPath: string | undefined;
+  currentDir: {
+    path: string,
+    info: FileInfo,
+    files: FileInfo[],
+  } | undefined;
+
+  selection: string[] = [];
 
   constructor(config: FavaExplorerConfig) {
     this.client = config.client;
