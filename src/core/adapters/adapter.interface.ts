@@ -57,6 +57,8 @@ export type FileData = string | Buffer | Uint8Array;
 
 export interface IFavaAdapter<T extends FavaLocation> {
 
+  getType(): T["type"];
+
   append(loc: T, filePath: string, data: FileData, options?: WriteFileOptions): Promise<void>;
 
   copy(srcLoc: T, srcPath: string, destLoc: T, destPath: string, options?: CopyOptions): Promise<void>;
@@ -79,7 +81,7 @@ export interface IFavaAdapter<T extends FavaLocation> {
 
   pathExists(loc: T, path: string): Promise<boolean>;
 
-  read(loc: T, filePath: string, options?: ReadBytesOptions): Promise<void>;
+  read(loc: T, filePath: string, options?: ReadBytesOptions): Promise<ReadFileResult>;
 
   // readDir(loc: T, dirPath: string): Promise<DirInfo>;
 
@@ -91,9 +93,21 @@ export interface IFavaAdapter<T extends FavaLocation> {
 
   stat(loc: T, path: string): Promise<FileInfo>;
 
-  // touch(loc: T, filePath: string): Promise<void>;
-
+  /**
+   * Write some data to a specified section of an existing file
+   * @param loc 
+   * @param filePath 
+   * @param data 
+   * @param options 
+   */
   write(loc: T, filePath: string, data: FileData, options?: WriteBytesOptions): Promise<WriteBytesResult>;
 
+  /**
+   * Write data to a file, replacing it if it already existed
+   * @param loc 
+   * @param filePath 
+   * @param data 
+   * @param options 
+   */
   writeFile(loc: T, filePath: string, data: FileData, options ?: WriteFileOptions): Promise<void>;
 }

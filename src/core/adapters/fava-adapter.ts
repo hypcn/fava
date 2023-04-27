@@ -16,6 +16,10 @@ export class FavaAdapter implements IFavaAdapter<FavaLocation_Fava> {
 
   constructor() {}
 
+  getType(): "Fava" {
+    return "Fava";
+  }
+
   private getClient(location: FavaLocation_Fava): FavaClient {
     let existing = this.locationClients.get(location.id);
     if (existing) return existing;
@@ -31,9 +35,10 @@ export class FavaAdapter implements IFavaAdapter<FavaLocation_Fava> {
   }
 
   async append(loc: FavaLocation_Fava, filePath: string, data: FileData, options?: WriteFileOptions): Promise<void> {
-    const client = this.getClient(loc);
-    const result = await client.append(loc.remoteId, filePath, data);
-    return;
+    throw new Error(`Not implemented`);
+    // const client = this.getClient(loc);
+    // const result = await client.append(loc.remoteId, filePath, data);
+    // return;
   }
 
   async copy(srcLoc: FavaLocation_Fava, srcPath: string, destLoc: FavaLocation_Fava, destPath: string, options?: CopyOptions): Promise<void> {
@@ -73,105 +78,64 @@ export class FavaAdapter implements IFavaAdapter<FavaLocation_Fava> {
   }
 
   async outputFile(loc: FavaLocation_Fava, filePath: string, data: FileData, options?: WriteFileOptions): Promise<void> {
-    const client = this.getClient(loc);
-
-    const fullFilePath = join(loc.root, filePath);
-    // const fullDirPath = dirname(fullFilePath);
-    // await fse.ensureDir(fullDirPath);
-    return fse.outputFile(fullFilePath, data, {
-      encoding: options?.encoding,
-      // flag: options.flag,
-      // mode: options.mode,
-      // signal: options.signal,
-    });
+    throw new Error(`Not implemented`);
+    // const client = this.getClient(loc);
+    // const result = await client.writeFile(loc.remoteId, filePath, data); // options?
+    // return;
   }
 
   async pathExists(loc: FavaLocation_Fava, path: string): Promise<boolean> {
     const client = this.getClient(loc);
-
-    const fullPath = join(loc.root, path);
-    return fse.pathExists(fullPath);
+    const result = await client.pathExists(loc.remoteId, path);
+    return result.exists;
   }
 
-  // fails if file doesn't exist
-  async read(loc: FavaLocation_Fava, filePath: string, options?: ReadBytesOptions): Promise<void> {
-    const client = this.getClient(loc);
-
-    // fse.read()
-    throw new Error("Not implemented: read()");
-    // TODO
+  async read(loc: FavaLocation_Fava, filePath: string, options?: ReadBytesOptions): Promise<ReadFileResult> {
+    throw new Error(`Not implemented`);
+    // const client = this.getClient(loc);
+    // // TODO
+    // const result = await client.readFilePart(loc.remoteId, filePath, options);
+    // return result;
   }
 
   async readFile(loc: FavaLocation_Fava, filePath: string, options?: ReadFileOptions): Promise<ReadFileResult> {
-    const client = this.getClient(loc);
-
-    const path = join(loc.root, filePath);
-    return fse.readFile(path, {
-      encoding: options?.encoding,
-    });
+    throw new Error(`Not implemented`);
+    // const client = this.getClient(loc);
+    // const result = await client.readFile(loc.remoteId, filePath, { });
+    // return result;
   }
 
   async remove(loc: FavaLocation_Fava, path: string): Promise<void> {
     const client = this.getClient(loc);
-
-    const fullPath = join(loc.root, path);
-    return fse.remove(fullPath);
+    const result = await client.remove(loc.remoteId, path);
+    return;
   }
 
   async rename(loc: FavaLocation_Fava, oldPath: string, newPath: string): Promise<void> {
     const client = this.getClient(loc);
-
-    const fullOldPath = join(loc.root, oldPath);
-    const fullNewPath = join(loc.root, newPath);
-    return fse.rename(fullOldPath, fullNewPath);
+    const result = await client.rename(loc.remoteId, oldPath, newPath);
+    return;
   }
 
   async stat(loc: FavaLocation_Fava, path: string) {
     const client = this.getClient(loc);
-
-    const fullPath = join(loc.root, path);
-    const stat = await fse.stat(fullPath);
-
-    const parsedPath = parse(fullPath);
-    const fileInfo: FileInfo = {
-      fullpath: FavaUtils.slash(fullPath),
-      dirpath: FavaUtils.slash(parsedPath.dir),
-      filename: parsedPath.base,
-      basename: parsedPath.name,
-      ext: parsedPath.ext,
-
-      size: stat.size,
-      isDir: stat.isDirectory(),
-
-      created: stat.birthtimeMs,
-      modified: stat.mtimeMs,
-      changed: stat.ctimeMs,
-      accessed: stat.atimeMs,
-    };
-    return fileInfo;
+    const result = await client.getStats(loc.remoteId, path);
+    return result.fileInfo;
   }
 
-  // fails if file doesn't exist
   async write(loc: FavaLocation_Fava, filePath: string, data: FileData, options?: WriteBytesOptions): Promise<WriteBytesResult> {
-    const client = this.getClient(loc);
-
-    throw new Error("Not implemented: write()");
-    // TODO
-
-    // fse.write()
-    
+    throw new Error(`Not implemented`);
+    // const client = this.getClient(loc);
+    // // TODO
+    // const result = await client.write(loc.remoteId, filePath, data, options);
+    // return result;
   }
 
   async writeFile(loc: FavaLocation_Fava, filePath: string, data: FileData, options?: WriteFileOptions): Promise<void> {
-    const client = this.getClient(loc);
-
-    const path = join(loc.root, filePath);
-    return fse.writeFile(path, data, {
-      encoding: options?.encoding,
-      // flag: options.flag,
-      // mode: options.mode,
-      // signal: options.signal,
-    });
+    throw new Error(`Not implemented`);
+    // const client = this.getClient(loc);
+    // const result = await client.writeFile(loc.remoteId, filePath, data); // options?
+    // return;
   }
 
 }

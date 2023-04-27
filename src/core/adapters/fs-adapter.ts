@@ -9,6 +9,10 @@ export class FsAdapter implements IFavaAdapter<FavaLocation_FS> {
 
   private logger = new Logger("FS Adapter");
 
+  getType(): "FS" {
+    return "FS";
+  }
+
   async append(loc: FavaLocation_FS, filePath: string, data: FileData, options?: WriteFileOptions): Promise<void> {
     const path = join(loc.root, filePath);
     await fse.appendFile(path, data, {
@@ -88,7 +92,7 @@ export class FsAdapter implements IFavaAdapter<FavaLocation_FS> {
   }
 
   // fails if file doesn't exist
-  async read(loc: FavaLocation_FS, filePath: string, options?: ReadBytesOptions): Promise<void> {
+  async read(loc: FavaLocation_FS, filePath: string, options?: ReadBytesOptions): Promise<ReadFileResult> {
     // fse.read()
     throw new Error("Not implemented: read()");
     // TODO
