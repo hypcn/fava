@@ -24,7 +24,7 @@ export interface FavaServerConfig {
    */
   port?: number,
 
-  /** Optionally specify a prefix for HTTP API routes */
+  /** Optionally specify a prefix for server HTTP routes */
   routePrefix?: string,
   
   /**

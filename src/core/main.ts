@@ -1,15 +1,16 @@
 import express, { Express } from "express";
 import { Server, createServer } from 'http';
+import urlJoin from "url-join";
 import { WebSocketServer } from 'ws';
+import { FavaLocation } from "../shared";
+import { CopyOptions, FileData, MoveOptions, ReadBytesOptions, ReadFileOptions, WriteBytesOptions, WriteFileOptions } from "./adapters/adapter.interface";
 import { FavaCore } from "./core";
 import { configureHttpApi } from "./http-api";
 import { FavaServerConfig } from "./interfaces/server-config.interface";
+import { configureErrorHandler, configureMiddleware } from "./middleware";
 import { Logger } from "./utils/logger";
 import { FavaUtils } from "./utils/utils";
-import { FavaLocation } from "../shared/location.interface";
-import { CopyOptions, FileData, MoveOptions, ReadBytesOptions, ReadFileOptions, WriteBytesOptions, WriteFileOptions } from "./adapters/adapter.interface";
-import { configureErrorHandler, configureMiddleware } from "./middleware";
-import urlJoin from "url-join";
+import { configureWebUi } from "./web-ui";
 
 const DEFAULT_PORT = 6131;
 
@@ -65,9 +66,13 @@ export class Fava {
     configureMiddleware(this.app);
     this.server.on("request", this.app);
 
+    const httpApiPrefix = config.routePrefix ? urlJoin(config.routePrefix, "/api") : "/api";
+    const wsApiPrefix = config.routePrefix ? urlJoin(config.routePrefix, "/ws") : "/ws";
+    const webUiPrefix = config.routePrefix ? urlJoin(config.routePrefix, "/") : "/";
+
     if (config.http) {
       configureHttpApi(this.app, this.core, {
-        routePrefix: config.routePrefix ? urlJoin(config.routePrefix, "/api") : "/api",
+        routePrefix: httpApiPrefix,
       });
       this.logger.log(`Configured HTTP API`);
     } else {
@@ -89,9 +94,10 @@ export class Fava {
     this.wsEnabled = Boolean(config.ws);
 
     if (config.ui) {
-
-      // TODO: wire up UI
-
+      configureWebUi(this.app, this.core, {
+        routePrefix: webUiPrefix,
+      });
+      this.logger.log(`Configured Web UI`);
     } else {
       this.logger.warn(`Web UI disabled`);
     }
@@ -123,13 +129,13 @@ export class Fava {
       address = `${addr}:${address.port}`
     }
     if (this.httpEnabled) {
-      this.logger.log(`HTTP API available at: http://${address}/api`);
+      this.logger.log(`HTTP API: ${urlJoin(`http://${address}`, httpApiPrefix)}`);
     }
     if (this.wsEnabled) {
-      this.logger.log(`WS API available at: ws://${address}`);
+      this.logger.log(`WS API:   ${urlJoin(`ws://${address}`, wsApiPrefix)}`);
     }
     if (this.uiEnabled) {
-      this.logger.log(`Web UI available at: http://${address}/ui`);
+      this.logger.log(`Web UI:   ${urlJoin(`http://${address}`, webUiPrefix)}`);
     }
 
   }

@@ -114,13 +114,19 @@ export function configureHttpApi(app: Express, core: FavaCore, options: {
 
     const locationId = req.params.locationId ?? "";
     const path = req.params["0"] ?? "";
-    const flags = putFlags(req);
     const body = req.body;
 
-    if (flags.moveFrom) {
+    const isMoveFrom = Boolean(req.query.moveFrom !== undefined);
+    const isCopyFrom = Boolean(req.query.copyFrom !== undefined);
+    const isRenameFrom = Boolean(req.query.renameFrom !== undefined);
+    const isEnsureDir = Boolean(req.query.ensureDir !== undefined);
+    const isEnsureFile = Boolean(req.query.ensureFile !== undefined);
+    const isOverwrite = Boolean(req.query.overwrite !== undefined);
+
+    if (isMoveFrom) {
       const from = queryLocIdAndPath(req, "moveFrom");
       logger.debug(`PUT: move: ${from.locId} / ${from.path} -> ${locationId} / ${path}`);
-      await core.move(from.locId, from.path, locationId, path, { overwrite: flags.overwrite });
+      await core.move(from.locId, from.path, locationId, path, { overwrite: isOverwrite });
       const result: UpdateResult = {
         update: "move",
         done: true,
@@ -128,10 +134,10 @@ export function configureHttpApi(app: Express, core: FavaCore, options: {
       res.json(result);
     }
     
-    else if (flags.copyFrom) {
+    else if (isCopyFrom) {
       const from = queryLocIdAndPath(req, "copyFrom");
       logger.debug(`PUT: copy: ${from.locId} / ${from.path} -> ${locationId} / ${path}`);
-      await core.copy(from.locId, from.path, locationId, path, { overwrite: flags.overwrite });
+      await core.copy(from.locId, from.path, locationId, path, { overwrite: isOverwrite });
       const result: UpdateResult = {
         update: "copy",
         done: true,
@@ -139,7 +145,7 @@ export function configureHttpApi(app: Express, core: FavaCore, options: {
       res.json(result);
     }
     
-    else if (flags.renameFrom) {
+    else if (isRenameFrom) {
       const from = req.query.renameFrom;
       if (!from || typeof from !== "string") {
         throw new Error(`Rename source must be a path`);
@@ -153,7 +159,7 @@ export function configureHttpApi(app: Express, core: FavaCore, options: {
       res.json(result);
     }
     
-    else if (flags.ensureDir) {
+    else if (isEnsureDir) {
       logger.debug(`PUT: ensureDir: ${locationId} / ${path}`);
       await core.ensureDir(locationId, path);
       const result: UpdateResult = {
@@ -163,7 +169,7 @@ export function configureHttpApi(app: Express, core: FavaCore, options: {
       res.json(result);
     }
     
-    else if (flags.ensureFile) {
+    else if (isEnsureFile) {
       logger.debug(`PUT: ensureFile: ${locationId} / ${path}`);
       await core.ensureFile(locationId, path);
       const result: UpdateResult = {
