@@ -19,7 +19,9 @@ As a standalone application:
 $ npm install @hypericon/fava --global
 ```
 
-# Quickstart - Library
+# Quickstart
+
+## Library
 
 ```typescript
 const fava = new FavaServer({
@@ -27,13 +29,13 @@ const fava = new FavaServer({
 });
 ```
 
-# Quickstart - Standalone
+## Standalone
 
 ```
 $ fava --http --ws --ui --loglevel=log
 ```
 
-# Quickstart - Client
+## Client
 
 TODO
 
