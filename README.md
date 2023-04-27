@@ -7,11 +7,15 @@ Exposes an HTTP and Websocket API to interact with the filesystem.
 
 # Install
 
+## Library
+
 As a library within another application:
 
 ```
 $ npm i @hypericon/fava
 ```
+
+## Standalone
 
 As a standalone application:
 
