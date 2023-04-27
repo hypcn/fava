@@ -5,15 +5,37 @@ Filesystem Access Via API
 
 Exposes an HTTP and Websocket API to interact with the filesystem.
 
-# Quickstart
+# Install
+
+As a library within another application:
 
 ```
 $ npm i @hypericon/fava
 ```
 
-```typescript
-// TODO
+As a standalone application:
+
 ```
+$ npm install @hypericon/fava --global
+```
+
+# Usage: Library
+
+```typescript
+const fava = new FavaServer({
+  // 
+});
+```
+
+# Usage: CLI
+
+```
+$ fava --http --ws --ui --loglevel=log
+```
+
+# Usage: UI
+
+
 
 # TODO
 
