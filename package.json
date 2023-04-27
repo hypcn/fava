@@ -12,9 +12,11 @@
     "dev": "concurrently npm:dev-lib npm:dev-ui",
     "dev-lib": "tsc --watch --preserveWatchOutput --project tsconfig.build.json",
     "dev-ui": "vite",
-    "build": "rimraf dist && tsc --project tsconfig.build.json",
+    "prebuild": "rimraf dist",
+    "build": "npm run build-lib && npm run build-ui",
+    "build-lib": "tsc --project tsconfig.build.json",
     "build-ui": "vite build",
-    "prepublishOnly": "npm run build && npm run build-ui",
+    "prepublishOnly": "npm run build",
     "start": "node dist/cli/cli.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
