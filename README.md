@@ -1,9 +1,9 @@
 
 # Fava
 
-Filesystem Access Via API
+File Access Via API
 
-Exposes an HTTP and Websocket API to interact with the filesystem.
+Exposes an HTTP and Websocket API to interact with the filesystem, and an optional web UI. Can be used either as a library or standalone application.
 
 # Install
 
@@ -67,3 +67,7 @@ client library
 - API to support a file explorer
 - doesn't need file display/preview capabilities
 - doesn't need GUI components
+
+Out of scope (at least for the time being):
+
+- tree view in the UI
