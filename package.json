@@ -1,7 +1,7 @@
 {
   "name": "@hypericon/fava",
   "version": "0.1.0",
-  "description": "Filesystem Access Via API",
+  "description": "File Access Via API",
   "author": "Ed Johnson, Hypericon Ltd.",
   "license": "MIT",
   "main": "dist/index.js",
@@ -9,7 +9,7 @@
     "fava": "./dist/cli/cli.js"
   },
   "scripts": {
-    "dev": "concurrently npm:dev-lib npm:dev-ui",
+    "dev": "rimraf dist && concurrently npm:dev-lib npm:dev-ui",
     "dev-lib": "tsc --watch --preserveWatchOutput --project tsconfig.build.json",
     "dev-ui": "vite",
     "prebuild": "rimraf dist",
