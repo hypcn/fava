@@ -1,11 +1,11 @@
-import { FavaLocationFS } from "../../shared";
+import { FavaLocation_FS } from "../../shared";
 import { list } from "drivelist";
 
 export class FavaUtils {
 
-  static async findDefaultLocations(): Promise<FavaLocationFS[]> {
+  static async findDefaultLocations(): Promise<FavaLocation_FS[]> {
 
-    const fsLocations: FavaLocationFS[] = [];
+    const fsLocations: FavaLocation_FS[] = [];
 
     const driveList = await list();
      

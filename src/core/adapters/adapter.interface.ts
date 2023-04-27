@@ -55,7 +55,7 @@ export interface WriteFileOptions {
 
 export type FileData = string | Buffer | Uint8Array;
 
-export interface FavaAdapter<T extends FavaLocation> {
+export interface IFavaAdapter<T extends FavaLocation> {
 
   append(loc: T, filePath: string, data: FileData, options?: WriteFileOptions): Promise<void>;
 

@@ -1,9 +1,14 @@
-import { CopyOptions, FileData, MoveOptions, ReadBytesOptions, ReadFileOptions, WriteBytesOptions, WriteFileOptions } from "./adapters/adapter.interface";
-import { FavaFsAdapter } from "./adapters/fs-adapter";
-import { FavaLocation } from "../shared";
+import { CopyOptions, IFavaAdapter, FileData, MoveOptions, ReadBytesOptions, ReadFileOptions, WriteBytesOptions, WriteFileOptions } from "./adapters/adapter.interface";
+import { FsAdapter } from "./adapters/fs-adapter";
+import { FavaLocation, FavaLocationType } from "../shared";
 import { Logger } from "./utils/logger";
 
-const fsAdapter = new FavaFsAdapter();
+const fsAdapter = new FsAdapter();
+
+const adapters: { [key in FavaLocationType]: IFavaAdapter<FavaLocation> } = {
+  FS: new FsAdapter(),
+  Fava: new FsAdapter(),
+};
 
 export class FavaCore {
 

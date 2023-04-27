@@ -1,15 +1,15 @@
 import { join, parse } from "path";
-import { CopyOptions, MoveOptions, FileData, WriteFileOptions, ReadBytesOptions, ReadFileOptions, WriteBytesOptions, FavaAdapter, ReadFileResult, WriteBytesResult } from "./adapter.interface";
+import { CopyOptions, MoveOptions, FileData, WriteFileOptions, ReadBytesOptions, ReadFileOptions, WriteBytesOptions, IFavaAdapter, ReadFileResult, WriteBytesResult } from "./adapter.interface";
 import * as fse from "fs-extra";
 import { Logger } from "../utils/logger";
 import { FavaUtils } from "../utils/utils";
-import { DirInfo, FavaLocationFS, FileInfo } from "../../shared";
+import { DirInfo, FavaLocation_FS, FileInfo } from "../../shared";
 
-export class FavaFsAdapter implements FavaAdapter<FavaLocationFS> {
+export class FsAdapter implements IFavaAdapter<FavaLocation_FS> {
 
   private logger = new Logger("FS Adapter");
 
-  async append(loc: FavaLocationFS, filePath: string, data: FileData, options?: WriteFileOptions): Promise<void> {
+  async append(loc: FavaLocation_FS, filePath: string, data: FileData, options?: WriteFileOptions): Promise<void> {
     const path = join(loc.root, filePath);
     await fse.appendFile(path, data, {
       encoding: options?.encoding,
@@ -19,7 +19,7 @@ export class FavaFsAdapter implements FavaAdapter<FavaLocationFS> {
     });
   }
 
-  async copy(srcLoc: FavaLocationFS, srcPath: string, destLoc: FavaLocationFS, destPath: string, options?: CopyOptions): Promise<void> {
+  async copy(srcLoc: FavaLocation_FS, srcPath: string, destLoc: FavaLocation_FS, destPath: string, options?: CopyOptions): Promise<void> {
     const fullSrcPath = join(srcLoc.root, srcPath);
     const fullDestPath = join(destLoc.root, destPath);
     return fse.copy(fullSrcPath, fullDestPath, {
@@ -28,22 +28,22 @@ export class FavaFsAdapter implements FavaAdapter<FavaLocationFS> {
     });
   }
 
-  async emptyDir(loc: FavaLocationFS, dirPath: string): Promise<void> {
+  async emptyDir(loc: FavaLocation_FS, dirPath: string): Promise<void> {
     const path = join(loc.root, dirPath);
     await fse.emptyDir(path);
   }
 
-  async ensureFile(loc: FavaLocationFS, filePath: string): Promise<void> {
+  async ensureFile(loc: FavaLocation_FS, filePath: string): Promise<void> {
     const path = join(loc.root, filePath);
     await fse.ensureFile(path);
   }
 
-  async ensureDir(loc: FavaLocationFS, dirPath: string): Promise<void> {
+  async ensureDir(loc: FavaLocation_FS, dirPath: string): Promise<void> {
     const path = join(loc.root, dirPath);
     await fse.ensureDir(path);
   }
 
-  async ls(loc: FavaLocationFS, dirPath: string): Promise<DirInfo> {
+  async ls(loc: FavaLocation_FS, dirPath: string): Promise<DirInfo> {
     const path = join(loc.root, dirPath);
 
     const dirStats = await this.stat(loc, dirPath);
@@ -61,7 +61,7 @@ export class FavaFsAdapter implements FavaAdapter<FavaLocationFS> {
     return dirInfo;
   }
 
-  async move(srcLoc: FavaLocationFS, srcPath: string, destLoc: FavaLocationFS, destPath: string, options?: MoveOptions): Promise<void> {
+  async move(srcLoc: FavaLocation_FS, srcPath: string, destLoc: FavaLocation_FS, destPath: string, options?: MoveOptions): Promise<void> {
     const fullSrcPath = join(srcLoc.root, srcPath);
     const fullDestPath = join(destLoc.root, destPath);
     return fse.move(fullSrcPath, fullDestPath, {
@@ -70,7 +70,7 @@ export class FavaFsAdapter implements FavaAdapter<FavaLocationFS> {
     });
   }
 
-  async outputFile(loc: FavaLocationFS, filePath: string, data: FileData, options?: WriteFileOptions): Promise<void> {
+  async outputFile(loc: FavaLocation_FS, filePath: string, data: FileData, options?: WriteFileOptions): Promise<void> {
     const fullFilePath = join(loc.root, filePath);
     // const fullDirPath = dirname(fullFilePath);
     // await fse.ensureDir(fullDirPath);
@@ -82,37 +82,37 @@ export class FavaFsAdapter implements FavaAdapter<FavaLocationFS> {
     });
   }
 
-  async pathExists(loc: FavaLocationFS, path: string): Promise<boolean> {
+  async pathExists(loc: FavaLocation_FS, path: string): Promise<boolean> {
     const fullPath = join(loc.root, path);
     return fse.pathExists(fullPath);
   }
 
   // fails if file doesn't exist
-  async read(loc: FavaLocationFS, filePath: string, options?: ReadBytesOptions): Promise<void> {
+  async read(loc: FavaLocation_FS, filePath: string, options?: ReadBytesOptions): Promise<void> {
     // fse.read()
     throw new Error("Not implemented: read()");
     // TODO
   }
 
-  async readFile(loc: FavaLocationFS, filePath: string, options?: ReadFileOptions): Promise<ReadFileResult> {
+  async readFile(loc: FavaLocation_FS, filePath: string, options?: ReadFileOptions): Promise<ReadFileResult> {
     const path = join(loc.root, filePath);
     return fse.readFile(path, {
       encoding: options?.encoding,
     });
   }
 
-  async remove(loc: FavaLocationFS, path: string): Promise<void> {
+  async remove(loc: FavaLocation_FS, path: string): Promise<void> {
     const fullPath = join(loc.root, path);
     return fse.remove(fullPath);
   }
 
-  async rename(loc: FavaLocationFS, oldPath: string, newPath: string): Promise<void> {
+  async rename(loc: FavaLocation_FS, oldPath: string, newPath: string): Promise<void> {
     const fullOldPath = join(loc.root, oldPath);
     const fullNewPath = join(loc.root, newPath);
     return fse.rename(fullOldPath, fullNewPath);
   }
 
-  async stat(loc: FavaLocationFS, path: string) {
+  async stat(loc: FavaLocation_FS, path: string) {
     const fullPath = join(loc.root, path);
     const stat = await fse.stat(fullPath);
 
@@ -136,7 +136,7 @@ export class FavaFsAdapter implements FavaAdapter<FavaLocationFS> {
   }
 
   // fails if file doesn't exist
-  async write(loc: FavaLocationFS, filePath: string, data: FileData, options?: WriteBytesOptions): Promise<WriteBytesResult> {
+  async write(loc: FavaLocation_FS, filePath: string, data: FileData, options?: WriteBytesOptions): Promise<WriteBytesResult> {
     throw new Error("Not implemented: write()");
     // TODO
 
@@ -144,7 +144,7 @@ export class FavaFsAdapter implements FavaAdapter<FavaLocationFS> {
     
   }
 
-  async writeFile(loc: FavaLocationFS, filePath: string, data: FileData, options?: WriteFileOptions): Promise<void> {
+  async writeFile(loc: FavaLocation_FS, filePath: string, data: FileData, options?: WriteFileOptions): Promise<void> {
     const path = join(loc.root, filePath);
     return fse.writeFile(path, data, {
       encoding: options?.encoding,
