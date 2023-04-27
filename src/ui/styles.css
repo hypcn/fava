@@ -2,4 +2,19 @@
 @tailwind components;
 @tailwind utilities;
 
-body {}
+/* body {} */
+
+/* header { @apply fixed h-10 w-full px-2 flex items-stretch bg-primary text-primary-contrast font-semibold; }
+header a { @apply px-2 flex items-center hover:bg-white/30; }
+header a.active { @apply bg-white/20 hover:bg-white/30; } */
+
+/* Header height to allow for fixed header */
+/* main { @apply pt-10 flex-1; } */
+
+/* footer { @apply px-2 py-2 bg-light-dark border-t border-dark/20; } */
+
+/* .toolbar { @apply flex items-stretch bg-light; } */
+
+.btn-menu { @apply px-2 hover:bg-white active:bg-dark/10; }
+
+.link { @apply underline text-link hover:text-link-light active:text-link-dark; }
