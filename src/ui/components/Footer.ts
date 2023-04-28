@@ -8,10 +8,11 @@ export const Footer: m.Component<{}> = {
     }, [
 
       m(".py-1.text-sm", [
-        m("span", "Fava by "),
+        m("span", "Fava built by "),
         m("a.link", {
           href: "https://hypericon.co.uk",
         }, "Hypericon"),
+        // m("span", " (c) 2023"),
       ]),
 
       m("a.hover:text-link", {

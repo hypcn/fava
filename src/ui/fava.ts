@@ -5,7 +5,7 @@ const isDev =
   ["5173", "5174", "5175"].includes(location.port);
 
 const origin = isDev
-  ? "https://localhost:6131"
+  ? "http://localhost:6131"
   : location.origin;
 
 export const fava = new FavaClient({
