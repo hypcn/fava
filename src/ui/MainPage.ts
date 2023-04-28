@@ -2,8 +2,9 @@ import m, { redraw } from "mithril";
 import { Footer } from "./components/Footer";
 import { ListView } from "../client";
 import { fava } from "./fava";
-import { FavaLocation } from "../shared";
+import { FavaLocation, FileInfo } from "../shared";
 import { redrawAfter } from "./services/redraw-after";
+import { FileListTable } from "./components/FileListTable";
 
 let locations: FavaLocation[] = [];
 const listView = new ListView(fava, undefined);
@@ -26,7 +27,7 @@ export const MainPage: m.Component<{}> = {
         m("button.btn-menu", "Help"),
       ]),
 
-      m("main.flex-1", [
+      m("main.flex-1.flex.flex-col.overflow-auto", [
 
         m("h1", "Fava"),
 
@@ -38,13 +39,16 @@ export const MainPage: m.Component<{}> = {
 
         m("hr"),
 
-        // Left
-        m(".flex.items-stretch", [
+        // Main stuff
+        m(".flex-1.flex.items-stretch.overflow-auto", [
 
-          m(".flex.flex-col", {
+          m(".flex.flex-col.shrink-0.border-r.border-border", {
+            class: "p-2",
             style: `width: 200px;`,
           }, [
-            m("span", "Locations:"),
+
+            m("span.font-semibold", "Locations:"),
+
             locations.length === 0 ? [
               m("span.text-hint", "No locations"),
             ] : [
@@ -56,37 +60,47 @@ export const MainPage: m.Component<{}> = {
                 ])
               }),
             ],
-          ]),
-
-          m(".flex-1.flex.flex-col.items-stretch", [
-            m("span", `Current Path: ${listView.path}`),
-
-            listView.files === undefined ? [
-              m("span.text-hint", "Loading files..."),
-            ] : [
-              listView.files.length === 0 ? [
-                m("span.text-hint", "This directory is empty"),
-              ] : [
-                listView.files.map(fileInfo => {
-                  return m(".flex", [
-                    fileInfo.filename,
-                  ]);
-                }),
-              ],
-            ],
 
           ]),
 
-          m("", {
+          m(".flex-1.flex.flex-col.items-stretch.overflow-auto", [
+
+            m("span.font-semibold", `Current Path: ${listView.path}`),
+
+            m(FileListTable, {
+              message: (listView.location === undefined) ? "Select a location" :
+                (listView.files === undefined) ? "Loading files..." :
+                  (listView.files.length === 0) ? "This directory is empty" :
+                undefined,
+              files: listView.files ?? [],
+              selected: listView.selection,
+
+              click: (file, index) => listView.select(file),
+              ctrlclick: (file, index) => listView.toggleSelected(file),
+              shiftclick: (file, index) => listView.selectTo(file),
+              dblclick: (file, index) => {
+                if (file.isDir) {
+                  redrawAfter(listView.navitageTo(file.fullpath));
+                } else {
+                  console.log(`open/preview file: ${file.filename}`);
+                }
+              },
+            }),
+
+          ]),
+
+          m(".flex.flex-col.items-stretch.shrink-0.border-l.border-border", {
+            class: "p-2",
             style: `width: 200px;`,
           }, [
-            "details of selected",
+
+            m("span.font-semibold", "Details"),
+
+            m("span", "details of selected"),
+
           ]),
 
         ]),
-
-
-
 
       ]),
 
@@ -95,4 +109,20 @@ export const MainPage: m.Component<{}> = {
     ]);
   }
 
+};
+
+const FileListItem: m.Component<{
+  fileInfo: FileInfo,
+  click: () => any,
+  check: () => any,
+  uncheck: () => any,
+}> = {
+  view({ attrs }) {
+
+    return m(".flex", {}, [
+      m(".w-12", "icon"),
+      m(".flex-1", "icon"),
+    ]);
+
+  }
 };
