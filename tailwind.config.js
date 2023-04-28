@@ -39,6 +39,11 @@ module.exports = {
           DEFAULT: colors.sky[700],
           dark: colors.sky[800],
         },
+        highlight: {
+          light: colors.sky[400],
+          DEFAULT: colors.sky[500],
+          dark: colors.sky[600],
+        },
       },
     },
   },
