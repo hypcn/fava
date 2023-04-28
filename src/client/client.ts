@@ -11,7 +11,7 @@ const DEFAULT_ORIGIN = "http://localhost:6131";
 
 export class FavaClient {
 
-  private _fetch: typeof fetch = window?.fetch;
+  private _fetch: typeof fetch = window?.fetch?.bind(window);
   
   private apiPrefix: string;
 
@@ -19,6 +19,7 @@ export class FavaClient {
 
     if (config.fetch) this._fetch = config.fetch;
     if (!this._fetch) throw new Error("No `fetch()` implementation provided!");
+    // if (window) this._fetch.bind(window);
 
     const origin = config.origin || DEFAULT_ORIGIN;
     const routePrefix = config.routePrefix || "";
