@@ -14,6 +14,7 @@ export class FsAdapter implements IFavaAdapter<FavaLocation_FS> {
   }
 
   async append(loc: FavaLocation_FS, filePath: string, data: FileData, options?: WriteFileOptions): Promise<void> {
+    this.logger.verbose(`append:`, loc.id, filePath);
     const path = join(loc.root, filePath);
     await fse.appendFile(path, data, {
       encoding: options?.encoding,
@@ -23,9 +24,10 @@ export class FsAdapter implements IFavaAdapter<FavaLocation_FS> {
     });
   }
 
-  async copy(srcLoc: FavaLocation_FS, srcPath: string, destLoc: FavaLocation_FS, destPath: string, options?: CopyOptions): Promise<void> {
-    const fullSrcPath = join(srcLoc.root, srcPath);
-    const fullDestPath = join(destLoc.root, destPath);
+  async copy(fromLoc: FavaLocation_FS, fromPath: string, toLoc: FavaLocation_FS, toPath: string, options?: CopyOptions): Promise<void> {
+    this.logger.verbose(`copy:`, fromLoc.id, fromPath, toLoc.id, toPath);
+    const fullSrcPath = join(fromLoc.root, fromPath);
+    const fullDestPath = join(toLoc.root, toPath);
     return fse.copy(fullSrcPath, fullDestPath, {
       overwrite: options?.overwrite ?? false,
       errorOnExist: true,
@@ -33,30 +35,40 @@ export class FsAdapter implements IFavaAdapter<FavaLocation_FS> {
   }
 
   async emptyDir(loc: FavaLocation_FS, dirPath: string): Promise<void> {
+    this.logger.verbose(`emptyDir:`, loc.id, dirPath);
     const path = join(loc.root, dirPath);
     await fse.emptyDir(path);
   }
 
   async ensureFile(loc: FavaLocation_FS, filePath: string): Promise<void> {
+    this.logger.verbose(`ensureFile:`, loc.id, filePath);
     const path = join(loc.root, filePath);
     await fse.ensureFile(path);
   }
 
   async ensureDir(loc: FavaLocation_FS, dirPath: string): Promise<void> {
+    this.logger.verbose(`ensureDir:`, loc.id, dirPath);
     const path = join(loc.root, dirPath);
     await fse.ensureDir(path);
   }
 
   async ls(loc: FavaLocation_FS, dirPath: string): Promise<DirInfo> {
-    const path = join(loc.root, dirPath);
+    this.logger.verbose(`ls:`, loc.id, dirPath);
+    const lsPath = join(loc.root, dirPath);
 
     const dirStats = await this.stat(loc, dirPath);
-    
-    const filenames = await fse.readdir(path);
+
+    const filenames = await fse.readdir(lsPath);
     const statPromises = filenames.map(filename => {
-      return this.stat(loc, join(dirPath, filename));
+      const filePathWithinLoc = join(dirPath, filename);
+      return this.stat(loc, filePathWithinLoc).catch(err => {
+        this.logger.warn(`Error reading stats for ${loc.root} ${filePathWithinLoc}:`, err.code);
+        return undefined;
+      });
     });
-    const filesInfo = await Promise.all(statPromises);
+    const statResults = await Promise.all(statPromises);
+    let filesInfo: FileInfo[] = statResults.filter(r => r !== undefined) as FileInfo[];
+    // ^ this might want to return soe sort of incomplete stats later
 
     const dirInfo: DirInfo = {
       dir: dirStats,
@@ -65,9 +77,10 @@ export class FsAdapter implements IFavaAdapter<FavaLocation_FS> {
     return dirInfo;
   }
 
-  async move(srcLoc: FavaLocation_FS, srcPath: string, destLoc: FavaLocation_FS, destPath: string, options?: MoveOptions): Promise<void> {
-    const fullSrcPath = join(srcLoc.root, srcPath);
-    const fullDestPath = join(destLoc.root, destPath);
+  async move(fromLoc: FavaLocation_FS, fromPath: string, toLoc: FavaLocation_FS, toPath: string, options?: MoveOptions): Promise<void> {
+    this.logger.verbose(`move:`, fromLoc.id, fromPath, toLoc.id, toPath);
+    const fullSrcPath = join(fromLoc.root, fromPath);
+    const fullDestPath = join(toLoc.root, toPath);
     return fse.move(fullSrcPath, fullDestPath, {
       overwrite: options?.overwrite ?? false,
       // dereference,
@@ -75,6 +88,7 @@ export class FsAdapter implements IFavaAdapter<FavaLocation_FS> {
   }
 
   async outputFile(loc: FavaLocation_FS, filePath: string, data: FileData, options?: WriteFileOptions): Promise<void> {
+    this.logger.verbose(`outputFile:`, loc.id, filePath);
     const fullFilePath = join(loc.root, filePath);
     // const fullDirPath = dirname(fullFilePath);
     // await fse.ensureDir(fullDirPath);
@@ -87,18 +101,21 @@ export class FsAdapter implements IFavaAdapter<FavaLocation_FS> {
   }
 
   async pathExists(loc: FavaLocation_FS, path: string): Promise<boolean> {
+    this.logger.verbose(`pathExists:`, loc.id, path);
     const fullPath = join(loc.root, path);
     return fse.pathExists(fullPath);
   }
 
   // fails if file doesn't exist
   async read(loc: FavaLocation_FS, filePath: string, options?: ReadBytesOptions): Promise<ReadFileResult> {
+    this.logger.verbose(`read:`, loc.id, filePath);
     // fse.read()
     throw new Error("Not implemented: read()");
     // TODO
   }
 
   async readFile(loc: FavaLocation_FS, filePath: string, options?: ReadFileOptions): Promise<ReadFileResult> {
+    this.logger.verbose(`readFile:`, loc.id, filePath);
     const path = join(loc.root, filePath);
     return fse.readFile(path, {
       encoding: options?.encoding,
@@ -106,17 +123,20 @@ export class FsAdapter implements IFavaAdapter<FavaLocation_FS> {
   }
 
   async remove(loc: FavaLocation_FS, path: string): Promise<void> {
+    this.logger.verbose(`remove:`, loc.id, path);
     const fullPath = join(loc.root, path);
     return fse.remove(fullPath);
   }
 
   async rename(loc: FavaLocation_FS, oldPath: string, newPath: string): Promise<void> {
+    this.logger.verbose(`rename:`, loc.id, oldPath, "->", newPath);
     const fullOldPath = join(loc.root, oldPath);
     const fullNewPath = join(loc.root, newPath);
     return fse.rename(fullOldPath, fullNewPath);
   }
 
   async stat(loc: FavaLocation_FS, path: string) {
+    this.logger.verbose(`stat:`, loc.id, path);
     const fullPath = join(loc.root, path);
     const stat = await fse.stat(fullPath);
 
@@ -141,6 +161,7 @@ export class FsAdapter implements IFavaAdapter<FavaLocation_FS> {
 
   // fails if file doesn't exist
   async write(loc: FavaLocation_FS, filePath: string, data: FileData, options?: WriteBytesOptions): Promise<WriteBytesResult> {
+    this.logger.verbose(`write:`, loc.id, filePath);
     throw new Error("Not implemented: write()");
     // TODO
 
@@ -149,6 +170,7 @@ export class FsAdapter implements IFavaAdapter<FavaLocation_FS> {
   }
 
   async writeFile(loc: FavaLocation_FS, filePath: string, data: FileData, options?: WriteFileOptions): Promise<void> {
+    this.logger.verbose(`writeFile:`, loc.id, filePath);
     const path = join(loc.root, filePath);
     return fse.writeFile(path, data, {
       encoding: options?.encoding,
