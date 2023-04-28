@@ -1,4 +1,7 @@
 
+// https://filezilla-project.org/filezilla_pro.php
+// FileZilla Pro supports FTP, FTPS, SFTP, Amazon S3, Backblaze B2, Dropbox, Google Cloud, Google Drive, Azure, OneDrive and OneDrive for Business, SharePoint, OpenStack Swift and WebDAV.
+
 export type FavaLocationType =
   | "FS"
   | "Fava"
