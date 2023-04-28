@@ -62,7 +62,7 @@ export function configureHttpApi(app: Express, core: FavaCore, options: {
   app.get(apiRoute, asyncHandler(async (req, res, next) => {
 
     const locationId = req.params.locationId ?? "";
-    const path = req.params["0"] ?? "";
+    const path = req.params["0"] || "/";
 
     const isReadDir = req.query.readDir !== undefined;
     const isStats = req.query.stats !== undefined;
@@ -71,7 +71,7 @@ export function configureHttpApi(app: Express, core: FavaCore, options: {
     // TODO: Range header
 
     if (isReadDir) {
-      logger.debug(`GET: readDir: ${locationId} / ${path}`);
+      logger.debug(`GET: readDir:`, locationId, path);
       const dirInfo = await core.readDir(locationId, path);
       const result: ReadDirResult = {
         dirInfo,
@@ -80,7 +80,7 @@ export function configureHttpApi(app: Express, core: FavaCore, options: {
     }
     
     else if (isStats) {
-      logger.debug(`GET: stats: ${locationId} / ${path}`);
+      logger.debug(`GET: stats:`, locationId, path);
       const fileInfo = await core.stat(locationId, path);
       const result: GetStatsResult = {
         fileInfo,
@@ -89,7 +89,7 @@ export function configureHttpApi(app: Express, core: FavaCore, options: {
     }
     
     else if (isExists) {
-      logger.debug(`GET: exists: ${locationId} / ${path}`);
+      logger.debug(`GET: exists:`, locationId, path);
       const exists = await core.pathExists(locationId, path);
       const result: PathExistsResult = {
         exists,
@@ -98,7 +98,7 @@ export function configureHttpApi(app: Express, core: FavaCore, options: {
     }
     
     else {
-      logger.debug(`GET: read: ${locationId} / ${path}`);
+      logger.debug(`GET: read:`, locationId, path);
       const file = await core.readFile(locationId, path);
       res.send(file);
     }
@@ -110,7 +110,7 @@ export function configureHttpApi(app: Express, core: FavaCore, options: {
   app.put(apiRoute, asyncHandler(async (req, res, next) => {
 
     const locationId = req.params.locationId ?? "";
-    const path = req.params["0"] ?? "";
+    const path = req.params["0"] || "/";
     const body = req.body;
 
     const isMoveFrom = Boolean(req.query.moveFrom !== undefined);
@@ -122,7 +122,7 @@ export function configureHttpApi(app: Express, core: FavaCore, options: {
 
     if (isMoveFrom) {
       const from = queryLocIdAndPath(req, "moveFrom");
-      logger.debug(`PUT: move: ${from.locId} / ${from.path} -> ${locationId} / ${path}`);
+      logger.debug(`PUT: move:`, from.locId, from.path, "->", locationId, path);
       await core.move(from.locId, from.path, locationId, path, { overwrite: isOverwrite });
       const result: UpdateResult = {
         update: "move",
@@ -133,7 +133,7 @@ export function configureHttpApi(app: Express, core: FavaCore, options: {
     
     else if (isCopyFrom) {
       const from = queryLocIdAndPath(req, "copyFrom");
-      logger.debug(`PUT: copy: ${from.locId} / ${from.path} -> ${locationId} / ${path}`);
+      logger.debug(`PUT: copy:`, from.locId, from.path, "->", locationId, path);
       await core.copy(from.locId, from.path, locationId, path, { overwrite: isOverwrite });
       const result: UpdateResult = {
         update: "copy",
@@ -147,7 +147,7 @@ export function configureHttpApi(app: Express, core: FavaCore, options: {
       if (!from || typeof from !== "string") {
         throw new Error(`Rename source must be a path`);
       }
-      logger.debug(`PUT: rename: ${locationId} / ${from} -> ${locationId} / ${path}`);
+      logger.debug(`PUT: rename:`, locationId, from, "->", locationId, path);
       await core.rename(locationId, from, path);
       const result: UpdateResult = {
         update: "rename",
@@ -157,7 +157,7 @@ export function configureHttpApi(app: Express, core: FavaCore, options: {
     }
     
     else if (isEnsureDir) {
-      logger.debug(`PUT: ensureDir: ${locationId} / ${path}`);
+      logger.debug(`PUT: ensureDir:`, locationId, path);
       await core.ensureDir(locationId, path);
       const result: UpdateResult = {
         update: "ensureDir",
@@ -167,7 +167,7 @@ export function configureHttpApi(app: Express, core: FavaCore, options: {
     }
     
     else if (isEnsureFile) {
-      logger.debug(`PUT: ensureFile: ${locationId} / ${path}`);
+      logger.debug(`PUT: ensureFile:`, locationId, path);
       await core.ensureFile(locationId, path);
       const result: UpdateResult = {
         update: "ensureFile",
@@ -177,8 +177,8 @@ export function configureHttpApi(app: Express, core: FavaCore, options: {
     }
     
     else {
-      logger.debug(`PUT: write: ${locationId} / ${path}`);
-      logger.debug(`PUT: write body: ${body}`);
+      logger.debug(`PUT: write:`, locationId, path);
+      logger.debug(`PUT: write body:`, body);
       await core.outputFile(locationId, path, body, {});
       const result: UpdateResult = {
         update: "write",
@@ -192,13 +192,13 @@ export function configureHttpApi(app: Express, core: FavaCore, options: {
   app.patch(apiRoute, asyncHandler(async (req, res, next) => {
 
     const locationId = req.params.locationId ?? "";
-    const path = req.params["0"] ?? "";
+    const path = req.params["0"] || "/";
     const body = req.body;
 
     const isAppend = req.query.append !== undefined;
 
     if (isAppend) {
-      logger.debug(`PATCH: append: ${locationId} / ${path}`);
+      logger.debug(`PATCH: append:`, locationId, path);
       await core.append(locationId, path, body, {});
       const result: UpdateResult = {
         update: "append",
@@ -208,7 +208,7 @@ export function configureHttpApi(app: Express, core: FavaCore, options: {
     }
 
     else {
-      logger.debug(`PATCH: write: ${locationId} / ${path}`);
+      logger.debug(`PATCH: write:`, locationId, path);
       await core.write(locationId, path, body, {
         // range?
       });
@@ -224,12 +224,12 @@ export function configureHttpApi(app: Express, core: FavaCore, options: {
   app.delete(apiRoute, asyncHandler(async (req, res, next) => {
 
     const locationId = req.params.locationId ?? "";
-    const path = req.params["0"] ?? "";
+    const path = req.params["0"] || "/";
 
     const isEmptyDir = req.query.emptyDir !== undefined;
 
     if (isEmptyDir) {
-      logger.debug(`DELETE: emptyDir: ${locationId} / ${path}`);
+      logger.debug(`DELETE: emptyDir:`, locationId, path);
       await core.emptyDir(locationId, path);
       const result: UpdateResult = {
         update: "emptyDir",
@@ -239,7 +239,7 @@ export function configureHttpApi(app: Express, core: FavaCore, options: {
     }
 
     else {
-      logger.debug(`DELETE: remove: ${locationId} / ${path}`);
+      logger.debug(`DELETE: remove:`, locationId, path);
       await core.remove(locationId, path);
       const result: UpdateResult = {
         update: "remove",
