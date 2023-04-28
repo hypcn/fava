@@ -4,6 +4,7 @@ import * as fse from "fs-extra";
 import { Logger } from "../utils/logger";
 import { FavaUtils } from "../utils/utils";
 import { DirInfo, FavaLocation_FS, FileInfo } from "../../shared";
+import mime from "mime";
 
 export class FsAdapter implements IFavaAdapter<FavaLocation_FS> {
 
@@ -137,25 +138,30 @@ export class FsAdapter implements IFavaAdapter<FavaLocation_FS> {
 
   async stat(loc: FavaLocation_FS, path: string) {
     this.logger.verbose(`stat:`, loc.id, path);
+
     const fullPath = join(loc.root, path);
     const stat = await fse.stat(fullPath);
 
     const parsedPath = parse(fullPath);
+    const mimeType = mime.getType(path) ?? "";
+
     const fileInfo: FileInfo = {
-      fullpath: FavaUtils.slash(fullPath),
+      fullpath: FavaUtils.slash(path),
       dirpath: FavaUtils.slash(parsedPath.dir),
       filename: parsedPath.base,
       basename: parsedPath.name,
       ext: parsedPath.ext,
 
-      size: stat.size,
+      mimeType: mimeType,
       isDir: stat.isDirectory(),
+      size: stat.size,
 
       created: stat.birthtimeMs,
       modified: stat.mtimeMs,
       changed: stat.ctimeMs,
       accessed: stat.atimeMs,
     };
+
     return fileInfo;
   }
 

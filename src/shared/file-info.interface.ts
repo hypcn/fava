@@ -16,11 +16,13 @@ export interface FileInfo {
   basename: string,
   /** The file extension, if any, including the leading "." */
   ext: string,
-
-  /** The size in bytes */
-  size: number,
+  
+  /** The mime type of the file, or empty string for folders or unknown extensions */
+  mimeType: string,
   /** If the item is a directory */
   isDir: boolean,
+  /** The size in bytes */
+  size: number,
 
   /** When the file was created, as millisecond epoch timestamp */
   created: number,
