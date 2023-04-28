@@ -2,7 +2,7 @@ import { FavaLogger } from "../interfaces/logger.interface";
 import chalk from "chalk";
 import { format } from "util";
 
-export type LogLevel = "debug" | "log" | "warn" | "error";
+export type LogLevel = "verbose" | "debug" | "log" | "warn" | "error";
 
 export interface LoggingOptions {
   context?: string,
@@ -32,6 +32,10 @@ export class Logger {
     }
   }
 
+  verbose(...msgs: any[]) {
+    Logger.logMessages("verbose", this.options, ...msgs);
+  }
+
   debug(...msgs: any[]) {
     Logger.logMessages("debug", this.options, ...msgs);
   }
@@ -59,6 +63,7 @@ export class Logger {
     msgs = Logger.addMsgsPrefixes(level, opts, ...msgs)
 
     const levelColourFn = {
+      verbose: chalk.gray,
       debug: chalk.magentaBright,
       log: chalk.cyanBright,
       warn: chalk.yellowBright,
@@ -98,6 +103,8 @@ export class Logger {
     } else if (against === "log") {
       if (test === "error" || test === "warn" || test === "log") return true;
     } else if (against === "debug") {
+      if (test === "error" || test === "warn" || test === "log" || test === "debug") return true;
+    } else if (against === "verbose") {
       return true;
     }
     return false;
