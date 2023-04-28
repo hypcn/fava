@@ -63,7 +63,7 @@ export class Fava {
     const startListening = !Boolean(config.server);
 
     this.app = express();
-    configureMiddleware(this.app);
+    configureMiddleware(this.app, config);
     this.server.on("request", this.app);
 
     const httpApiPrefix = config.routePrefix ? urlJoin(config.routePrefix, "/api") : "/api";

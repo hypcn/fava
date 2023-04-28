@@ -2,13 +2,19 @@ import { Express, Request, Response, json, raw, text, urlencoded } from "express
 import { Logger } from "./utils/logger";
 import { format } from "util";
 import { FavaUtils } from "./utils/utils";
+import { FavaServerConfig } from "./interfaces";
+import cors from "cors";
 
 const logger = new Logger("HTTP");
 
-export function configureMiddleware(app: Express) {
+export function configureMiddleware(app: Express, config: FavaServerConfig) {
   logger.debug(`Adding middleware...`);
 
   // No error handlers here
+
+  if (config.noCors !== true) {
+    app.use(cors());
+  }
 
   app.use(json({}));
   app.use(raw({}));

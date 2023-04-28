@@ -47,4 +47,7 @@ export interface FavaServerConfig {
   /** Optionally configure the logging level of the built-in logger */
   logLevel?: LogLevel,
 
+  /** Disable CORS, which is enabled by default */
+  noCors?: boolean,
+
 }
