@@ -46,6 +46,7 @@ TODO
 # Options
 
 TODO: detail the options of the server constructor
+- and client constructor
 
 # TODO
 
@@ -65,7 +66,14 @@ client library
 - API to support a file explorer
 - doesn't need file display/preview capabilities
 - doesn't need GUI components
+- simple tree view in the UI
+
+Extensions:
+
+- thumbnail media previews
+- preview selected file
+- autoplay media/slideshow?
 
 Out of scope (at least for the time being):
 
-- tree view in the UI
+
