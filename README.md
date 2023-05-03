@@ -58,6 +58,7 @@ Core
   - implement them
   - unauthenticated should *not* be the default
 - ? file preview thumbnails?
+- streams to manage large files, and moving between locations
 
 client library
 
@@ -68,8 +69,9 @@ client library
 - doesn't need GUI components
 - simple tree view in the UI
 
-Extensions:
+Future extensions:
 
+- Create/generate OpenAPI spec for HTTP API
 - thumbnail media previews
 - preview selected file
 - autoplay media/slideshow?
@@ -77,3 +79,9 @@ Extensions:
 Out of scope (at least for the time being):
 
 
+
+## Other adapter possibilities
+
+- WebDAV? - https://www.npmjs.com/package/webdav
+- S3
+- B2 (S3?)
