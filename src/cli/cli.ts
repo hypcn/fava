@@ -4,7 +4,7 @@ import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
 import { Fava } from "../core/main";
 import { FavaServerInterfaceConfig } from "../core/interfaces/server-config.interface";
-import { LogLevel } from "../core/utils/logger";
+import { LogLevel } from "@hypericon/axe";
 
 const argsParser = yargs(hideBin(process.argv))
   .usage(`USAGE:\nTODO`)

@@ -1,10 +1,10 @@
-import { join, parse } from "path";
-import { CopyOptions, MoveOptions, FileData, WriteFileOptions, ReadBytesOptions, ReadFileOptions, WriteBytesOptions, IFavaAdapter, ReadFileResult, WriteBytesResult } from "./adapter.interface";
+import { Logger } from "@hypericon/axe";
 import * as fse from "fs-extra";
-import { Logger } from "../utils/logger";
-import { FavaUtils } from "../utils/utils";
-import { DirInfo, FavaLocation_FS, FileInfo } from "../../shared";
 import mime from "mime";
+import { join, parse } from "path";
+import { DirInfo, FavaLocation_FS, FileInfo } from "../../shared";
+import { FavaUtils } from "../utils/utils";
+import { CopyOptions, FileData, IFavaAdapter, MoveOptions, ReadBytesOptions, ReadFileOptions, ReadFileResult, WriteBytesOptions, WriteBytesResult, WriteFileOptions } from "./adapter.interface";
 
 export class FsAdapter implements IFavaAdapter<FavaLocation_FS> {
 

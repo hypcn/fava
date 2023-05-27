@@ -1,9 +1,8 @@
-import { Express, Request, Response, json, raw, text, urlencoded } from "express";
-import { Logger } from "./utils/logger";
-import { format } from "util";
-import { FavaUtils } from "./utils/utils";
-import { FavaServerConfig } from "./interfaces";
+import { Logger } from "@hypericon/axe";
 import cors from "cors";
+import { Express, Request, Response, json, raw, text, urlencoded } from "express";
+import { FavaServerConfig } from "./interfaces";
+import { FavaUtils } from "./utils/utils";
 
 const logger = new Logger("HTTP");
 

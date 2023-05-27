@@ -1,7 +1,6 @@
+import { LogLevel, SimpleLogger } from "@hypericon/axe";
 import { Server } from "http";
-import { FavaLogger } from "./logger.interface";
 import { FavaLocation } from "../../shared";
-import { LogLevel } from "../utils/logger";
 
 /** Configure whether an interface is enabled, and if so, with what capabilities */
 export type FavaServerInterfaceConfig =
@@ -42,7 +41,7 @@ export interface FavaServerConfig {
   ui?: FavaServerInterfaceConfig,
 
   /** Optionally override the default logger */
-  logger?: FavaLogger,
+  logger?: SimpleLogger,
 
   /** Optionally configure the logging level of the built-in logger */
   logLevel?: LogLevel,

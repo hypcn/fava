@@ -8,9 +8,9 @@ import { FavaCore } from "./core";
 import { configureHttpApi } from "./http-api";
 import { FavaServerConfig } from "./interfaces/server-config.interface";
 import { configureErrorHandler, configureMiddleware } from "./middleware";
-import { Logger } from "./utils/logger";
 import { FavaUtils } from "./utils/utils";
 import { configureWebUi } from "./web-ui";
+import { Logger, SimpleLogger } from "@hypericon/axe";
 
 const DEFAULT_PORT = 6131;
 
@@ -31,10 +31,10 @@ export class Fava {
   constructor(config: FavaServerConfig) {
 
     if (config.logLevel) {
-      Logger.logLevel = config.logLevel;
+      this.logger.sinkFilter.all = config.logLevel;
     }
     if (config.logger) {
-      Logger.customLogger = config.logger;
+      this.logger = config.logger as Logger;
     }
 
     this.init(config);

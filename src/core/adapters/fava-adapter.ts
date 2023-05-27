@@ -1,11 +1,9 @@
-import { join, parse } from "path";
-import { CopyOptions, MoveOptions, FileData, WriteFileOptions, ReadBytesOptions, ReadFileOptions, WriteBytesOptions, IFavaAdapter, ReadFileResult, WriteBytesResult } from "./adapter.interface";
+import { CopyOptions, FileData, IFavaAdapter, MoveOptions, ReadBytesOptions, ReadFileOptions, ReadFileResult, WriteBytesOptions, WriteBytesResult, WriteFileOptions } from "./adapter.interface";
 // import * as fse from "fs-extra";
-import { Logger } from "../utils/logger";
-import { FavaUtils } from "../utils/utils";
-import { DirInfo, FavaLocation_Fava, FileInfo } from "../../shared";
+import { Logger } from "@hypericon/axe";
 import fetch from "node-fetch";
 import { FavaClient } from "../../client";
+import { DirInfo, FavaLocation_Fava } from "../../shared";
 
 export class FavaAdapter implements IFavaAdapter<FavaLocation_Fava> {
 

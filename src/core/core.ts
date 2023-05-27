@@ -1,8 +1,8 @@
-import { CopyOptions, IFavaAdapter, FileData, MoveOptions, ReadBytesOptions, ReadFileOptions, WriteBytesOptions, WriteFileOptions } from "./adapters/adapter.interface";
-import { FsAdapter } from "./adapters/fs-adapter";
+import { Logger } from "@hypericon/axe";
 import { FavaLocation, FavaLocationType } from "../shared";
-import { Logger } from "./utils/logger";
+import { CopyOptions, FileData, IFavaAdapter, MoveOptions, ReadBytesOptions, ReadFileOptions, WriteBytesOptions, WriteFileOptions } from "./adapters/adapter.interface";
 import { FavaAdapter } from "./adapters/fava-adapter";
+import { FsAdapter } from "./adapters/fs-adapter";
 
 const adapters: { [key in FavaLocationType]: IFavaAdapter<FavaLocation> } = {
   FS: new FsAdapter(),
