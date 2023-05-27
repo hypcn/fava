@@ -5,6 +5,13 @@ File Access Via API
 
 Exposes an HTTP and Websocket API to interact with the filesystem, and an optional web UI. Can be used either as a library or standalone application.
 
+Components:
+
+- **Core** - the main library, including webserver, adapters to all the types of storage
+- **CLI** - run the library as a standalone application
+- **Client** - client library to connect to the core HTTP API
+- **UI** - web UI to manage files in configured storage locations
+
 # Install
 
 ## Library
