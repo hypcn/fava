@@ -199,7 +199,7 @@ export function configureHttpApi(app: Express, core: FavaCore, options: {
     const path = req.params["0"] || "/";
     const body = req.body;
 
-    const isAppend = req.query.append !== undefined;
+    const isAppend = Boolean(req.query.append !== undefined);
 
     if (isAppend) {
       logger.debug(`PATCH: append:`, locationId, path);

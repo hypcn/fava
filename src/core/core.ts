@@ -16,11 +16,20 @@ export class FavaCore {
 
   private logger = new Logger("Core");
 
+  adapters: IFavaAdapter<FavaLocation>[] = [];
+  
   locations: FavaLocation[] = [];
 
-  adapters: IFavaAdapter<FavaLocation>[] = [];
+  constructor(options?: {
+    logger?: Logger,
+    locations?: FavaLocation[],
+    adapters?: IFavaAdapter<FavaLocation>[],
+  }) {
+    if (options?.logger) this.logger = options.logger;
 
-  constructor() {}
+    if (options?.adapters) this.adapters.push(...options.adapters);
+    if (options?.locations) this.locations.push(...options.locations);
+  }
 
   getLocations(): FavaLocation[] {
     return this.locations;

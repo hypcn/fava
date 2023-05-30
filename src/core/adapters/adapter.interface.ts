@@ -67,9 +67,9 @@ export interface IFavaAdapter<T extends FavaLocation> {
 
   emptyDir(loc: T, dirPath: string): Promise<void>;
 
-  ensureFile(loc: T, filePath: string): Promise<void>;
-
   ensureDir(loc: T, dirPath: string): Promise<void>;
+
+  ensureFile(loc: T, filePath: string): Promise<void>;
 
   exists(loc: T, path: string): Promise<boolean>;
 
@@ -109,5 +109,5 @@ export interface IFavaAdapter<T extends FavaLocation> {
    * @param data 
    * @param options 
    */
-  writeFile(loc: T, filePath: string, data: FileData, options ?: WriteFileOptions): Promise<void>;
+  writeFile(loc: T, filePath: string, data: FileData, options?: WriteFileOptions): Promise<void>;
 }
