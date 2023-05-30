@@ -13,7 +13,7 @@ export type FavaServerInterfaceConfig =
 
 export interface FavaServerConfig {
 
-  /** Optionally specify an existing server to use, otherwise a new one will be created */
+  /** Optionally specify an existing HTTP server to use, otherwise a new one will be created */
   server?: Server,
 
   /**
@@ -40,8 +40,8 @@ export interface FavaServerConfig {
   /** Configure whether the web UI is enabled, and if so, with what capabilities */
   ui?: FavaServerInterfaceConfig,
 
-  /** Optionally override the default logger */
-  logger?: SimpleLogger,
+  /** Optionally provide a function to get custom logger objects overriding the default logger */
+  getLogger?: (context?: string) => SimpleLogger,
 
   /** Optionally configure the logging level of the built-in logger */
   logLevel?: LogLevel,

@@ -1,10 +1,8 @@
-import { Logger } from "@hypericon/axe";
+import { Logger, SimpleLogger } from "@hypericon/axe";
 import { Express, Request, Response } from "express";
 import asyncHandler from "express-async-handler";
 import { GetLocationsResult, GetStatsResult, PathExistsResult, ReadDirResult, UpdateResult } from "../shared";
 import { FavaCore } from "./core";
-
-const logger = new Logger("HTTP");
 
 // GET locations
 
@@ -44,10 +42,16 @@ function putFlags(req: Request) {
 }
 
 export function configureHttpApi(app: Express, core: FavaCore, options: {
+  logger: SimpleLogger,
   routePrefix: string,
 }) {
 
-  const locationsRoute = options.routePrefix + "/locations";
+  const {
+    logger,
+    routePrefix,
+  } = options;
+
+  const locationsRoute = routePrefix + "/locations";
 
   app.get(locationsRoute, asyncHandler(async (req, res, next) => {
     logger.debug(`GET locations`);
@@ -57,7 +61,7 @@ export function configureHttpApi(app: Express, core: FavaCore, options: {
     res.json(response);
   }));
 
-  const apiRoute = options.routePrefix + "/:locationId/*";
+  const apiRoute = routePrefix + "/:locationId/*";
 
   app.get(apiRoute, asyncHandler(async (req, res, next) => {
 

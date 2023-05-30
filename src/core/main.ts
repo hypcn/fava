@@ -2,15 +2,15 @@ import express, { Express } from "express";
 import { Server, createServer } from 'http';
 import urlJoin from "url-join";
 import { WebSocketServer } from 'ws';
-import { FavaLocation } from "../shared";
+import { FavaLocation, FavaLocation_FS } from "../shared";
 import { CopyOptions, FileData, MoveOptions, ReadBytesOptions, ReadFileOptions, WriteBytesOptions, WriteFileOptions } from "./adapters/adapter.interface";
 import { FavaCore } from "./core";
 import { configureHttpApi } from "./http-api";
 import { FavaServerConfig } from "./interfaces/server-config.interface";
 import { configureErrorHandler, configureMiddleware } from "./middleware";
-import { FavaUtils } from "./utils/utils";
 import { configureWebUi } from "./web-ui";
 import { Logger, SimpleLogger } from "@hypericon/axe";
+import { list } from "drivelist";
 
 const DEFAULT_PORT = 6131;
 
@@ -26,15 +26,21 @@ export class Fava {
   private wsEnabled: boolean = false;
   private uiEnabled: boolean = false;
 
+  private httpApiPrefix: string = "/api";
+  private wsApiPrefix: string = "/ws";
+  private webUiPrefix: string = "/";
+
   private logger = new Logger("Main");
+  private getLogger: (context?: string) => SimpleLogger = (ctx) => new Logger(ctx);
 
   constructor(config: FavaServerConfig) {
 
     if (config.logLevel) {
       this.logger.sinkFilter.all = config.logLevel;
     }
-    if (config.logger) {
-      this.logger = config.logger as Logger;
+    if (config.getLogger) {
+      this.getLogger = config.getLogger;
+      this.logger = this.getLogger(this.logger.context) as Logger;
     }
 
     this.init(config);
@@ -43,70 +49,22 @@ export class Fava {
 
   private async init(config: FavaServerConfig) {
 
-    if (!config.locations || config.locations.length === 0) {
-      this.logger.log(`No locations specified; discovering local drives...`);
-      this.core.locations = await FavaUtils.findDefaultLocations();
-      this.logger.log(`Discovered ${this.core.locations.length} local drives`);
-      this.logger.debug(`Local drive locations:`, this.core.locations);
-    } else {
-      this.core.locations = config.locations;
-      this.logger.log(`${this.core.locations.length} locations specified`);
+    await this.initLocations(config);
+
+    if (config.routePrefix) {
+      this.httpApiPrefix = urlJoin(config.routePrefix, this.httpApiPrefix);
+      this.wsApiPrefix = urlJoin(config.routePrefix, this.wsApiPrefix);
+      this.webUiPrefix = urlJoin(config.routePrefix, this.webUiPrefix);
     }
 
-    if (config.server) {
-      this.logger.log(`Using existing HTTP server`);
-      this.server = config.server;
-    } else {
-      this.logger.log(`Creating new HTTP server`);
-      this.server = createServer();
-    }
-    const startListening = !Boolean(config.server);
-
-    this.app = express();
-    configureMiddleware(this.app, config);
-    this.server.on("request", this.app);
-
-    const httpApiPrefix = config.routePrefix ? urlJoin(config.routePrefix, "/api") : "/api";
-    const wsApiPrefix = config.routePrefix ? urlJoin(config.routePrefix, "/ws") : "/ws";
-    const webUiPrefix = config.routePrefix ? urlJoin(config.routePrefix, "/") : "/";
-
-    if (config.http) {
-      configureHttpApi(this.app, this.core, {
-        routePrefix: httpApiPrefix,
-      });
-      this.logger.log(`Configured HTTP API`);
-    } else {
-      this.logger.warn(`HTTP API disabled`);
-    }
     this.httpEnabled = Boolean(config.http);
-
-    this.wss = new WebSocketServer({
-      server: this.server,
-    });
-
-    if (config.ws) {
-
-      // TODO: wire up WS API
-
-    } else {
-      this.logger.warn(`WS API disabled`);
-    }
     this.wsEnabled = Boolean(config.ws);
-
-    if (config.ui) {
-      configureWebUi(this.app, this.core, {
-        routePrefix: webUiPrefix,
-      });
-      this.logger.log(`Configured Web UI`);
-    } else {
-      this.logger.warn(`Web UI disabled`);
-    }
     this.uiEnabled = Boolean(config.ui);
-
-    // Add error handlers last
-    configureErrorHandler(this.app);
-
+    
+    this.initServer(config);
+    
     // If the server was created by the library, start listening
+    const startListening = !Boolean(config.server);
     if (startListening) {
       this.server.on("error", (err) => {
         this.logger.error(`Fava server error:`, err);
@@ -117,8 +75,99 @@ export class Fava {
         this.logger.log(`Fava server listening on port: ${port}`);
       });
     } else {
-      this.logger.log(`Fava wired up to existing HTTP server`);
+      this.logger.log(`Fava connected to existing HTTP server`);
     }
+
+    this.printInitLogs();
+
+  }
+
+  private async initLocations(config: FavaServerConfig) {
+
+    if (!config.locations || config.locations.length === 0) {
+      this.logger.log(`No locations specified; discovering local drives...`);
+      this.core.locations = await this.findDefaultLocations();
+      this.logger.log(`Discovered ${this.core.locations.length} local drives`);
+      this.logger.debug(`Local drive locations:`, this.core.locations);
+    } else {
+      this.core.locations = config.locations;
+      this.logger.log(`${this.core.locations.length} locations specified`);
+    }
+
+  }
+
+  private initServer(config: FavaServerConfig) {
+
+    if (config.server) {
+      this.logger.log(`Using existing HTTP server`);
+      this.server = config.server;
+    } else {
+      this.logger.log(`Creating new HTTP server`);
+      this.server = createServer();
+    }
+
+    this.app = express();
+    configureMiddleware(this.app, config);
+    this.server.on("request", this.app);
+
+    if (config.http) {
+      configureHttpApi(this.app, this.core, {
+        logger: new Logger("HTTP"),
+        routePrefix: this.httpApiPrefix,
+      });
+      this.logger.log(`Configured HTTP API`);
+    }
+
+    this.wss = new WebSocketServer({
+      server: this.server,
+    });
+
+    if (config.ws) {
+
+      // TODO: wire up WS API
+
+    }
+
+    if (config.ui) {
+      configureWebUi(this.app, this.core, {
+        routePrefix: this.webUiPrefix,
+      });
+      this.logger.log(`Configured Web UI`);
+    }
+
+    // Add error handlers last
+    configureErrorHandler(this.app);
+
+  }
+
+  private async findDefaultLocations(): Promise<FavaLocation_FS[]> {
+
+    const fsLocations: FavaLocation_FS[] = [];
+
+    const driveList = await list();
+
+    for (const drive of driveList) {
+
+      let drivePath = drive.mountpoints.at(0)?.path;
+      if (!drivePath) continue;
+
+      drivePath = drivePath.replace(/\\/g, "");
+
+      const driveLabel = drive.mountpoints.at(0)?.label ?? drive.description;
+
+      fsLocations.push({
+        type: "FS",
+        id: drivePath,
+        name: driveLabel,
+        root: drivePath,
+      });
+    }
+
+    return fsLocations;
+
+  }
+
+  private printInitLogs() {
 
     // Print addresses of configured interfaces
     let address = this.server.address();
@@ -128,14 +177,23 @@ export class Fava {
       const addr = address.address === "::" ? "localhost" : address.address;
       address = `${addr}:${address.port}`
     }
+
     if (this.httpEnabled) {
-      this.logger.log(`HTTP API: ${urlJoin(`http://${address}`, httpApiPrefix)}`);
+      this.logger.log(`HTTP API enabled: ${urlJoin(`http://${address}`, this.httpApiPrefix)}`);
+    } else {
+      this.logger.warn(`HTTP API disabled (enable with: --http)`);
     }
+
     if (this.wsEnabled) {
-      this.logger.log(`WS API:   ${urlJoin(`ws://${address}`, wsApiPrefix)}`);
+      this.logger.log(`WS API enabled:   ${urlJoin(`ws://${address}`, this.wsApiPrefix)}`);
+    } else {
+      this.logger.warn(`WS API disabled   (enable with: --ws)`);
     }
+
     if (this.uiEnabled) {
-      this.logger.log(`Web UI:   ${urlJoin(`http://${address}`, webUiPrefix)}`);
+      this.logger.log(`Web UI enabled:   ${urlJoin(`http://${address}`, this.webUiPrefix)}`);
+    } else {
+      this.logger.warn(`Web UI disabled   (enable with: --ui)`);
     }
 
   }

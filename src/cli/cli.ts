@@ -10,23 +10,26 @@ const argsParser = yargs(hideBin(process.argv))
   .usage(`USAGE:\nTODO`)
   .help('h').alias('h', 'help')
   .option("http", {
+    type: "boolean",
     describe: `Enable or configure the HTTP API`,
   })
   .option("ws", {
+    type: "boolean",
     describe: "Enable or configure the websocket API",
   })
   .option("ui", {
+    type: "boolean",
     describe: "Enable or configure the web interface",
   })
   .option("port", {
     alias: ["p"],
+    type: "number",
     describe: "Specify the port (default: 6131)",
-    number: true,
   })
   .option("loglevel", {
-    // alias: ["p"],
+    // alias: [""],
+    type: "string",
     describe: `Specify the log level, one of "error", "warn", "log", "debug", default: "log" `,
-    string: true,
   })
   .epilog('(https://github.com/hypcn/fava)')
   ;

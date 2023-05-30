@@ -3,8 +3,8 @@ import * as fse from "fs-extra";
 import mime from "mime";
 import { join, parse } from "path";
 import { DirInfo, FavaLocation_FS, FileInfo } from "../../shared";
-import { FavaUtils } from "../utils/utils";
 import { CopyOptions, FileData, IFavaAdapter, MoveOptions, ReadBytesOptions, ReadFileOptions, ReadFileResult, WriteBytesOptions, WriteBytesResult, WriteFileOptions } from "./adapter.interface";
+import { backslashToForward } from "../utils";
 
 export class FsAdapter implements IFavaAdapter<FavaLocation_FS> {
 
@@ -146,8 +146,8 @@ export class FsAdapter implements IFavaAdapter<FavaLocation_FS> {
     const mimeType = mime.getType(path) ?? "";
 
     const fileInfo: FileInfo = {
-      fullpath: FavaUtils.slash(path),
-      dirpath: FavaUtils.slash(parsedPath.dir),
+      fullpath: backslashToForward(path),
+      dirpath: backslashToForward(parsedPath.dir),
       filename: parsedPath.base,
       basename: parsedPath.name,
       ext: parsedPath.ext,

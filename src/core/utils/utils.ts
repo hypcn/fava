@@ -1,42 +1,9 @@
-import { FavaLocation_FS } from "../../shared";
-import { list } from "drivelist";
 
-export class FavaUtils {
-
-  static async findDefaultLocations(): Promise<FavaLocation_FS[]> {
-
-    const fsLocations: FavaLocation_FS[] = [];
-
-    const driveList = await list();
-     
-    for (const drive of driveList) {
-
-      let drivePath = drive.mountpoints.at(0)?.path;
-      if (!drivePath) continue;
-
-      drivePath = drivePath.replace(/\\/g, "");
-
-      const driveLabel = drive.mountpoints.at(0)?.label ?? drive.description;
-
-      fsLocations.push({
-        type: "FS",
-        id: drivePath,
-        name: driveLabel,
-        root: drivePath,
-      });
-    }
-    
-    return fsLocations;
-
-  }
-
-  /**
-   * Convert backslashes to forward slashes
-   * @param s 
-   * @returns 
-   */
-  static slash(s: string): string {
-    return s.replace(/\\/g, "/");
-  }
-
+/**
+ * Convert backslashes to forward slashes
+ * @param s 
+ * @returns 
+ */
+export function backslashToForward(s: string): string {
+  return s.replace(/\\/g, "/");
 }

@@ -2,7 +2,7 @@ import { Logger } from "@hypericon/axe";
 import cors from "cors";
 import { Express, Request, Response, json, raw, text, urlencoded } from "express";
 import { FavaServerConfig } from "./interfaces";
-import { FavaUtils } from "./utils/utils";
+import { backslashToForward } from "./utils";
 
 const logger = new Logger("HTTP");
 
@@ -36,7 +36,7 @@ export function configureErrorHandler(app: Express) {
 
     const error = {
       error: err.name,
-      message: FavaUtils.slash(err.message),
+      message: backslashToForward(err.message),
       url: req.url,
     };
 
