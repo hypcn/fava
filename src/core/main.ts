@@ -6,7 +6,7 @@ import { FavaLocation, FavaLocation_FS } from "../shared";
 import { CopyOptions, FileData, MoveOptions, ReadBytesOptions, ReadFileOptions, WriteBytesOptions, WriteFileOptions } from "./adapters/adapter.interface";
 import { FavaCore } from "./core";
 import { configureHttpApi } from "./http-api";
-import { FavaServerConfig } from "./interfaces/server-config.interface";
+import { FavaConfig } from "./interfaces/fava-config.interface";
 import { configureErrorHandler, configureMiddleware } from "./middleware";
 import { configureWebUi } from "./web-ui";
 import { Logger, SimpleLogger } from "@hypericon/axe";
@@ -33,7 +33,7 @@ export class Fava {
   private logger = new Logger("Main");
   private getLogger: (context?: string) => SimpleLogger = (ctx) => new Logger(ctx);
 
-  constructor(config: FavaServerConfig) {
+  constructor(config: FavaConfig) {
 
     if (config.logLevel) {
       this.logger.sinkFilter.all = config.logLevel;
@@ -47,7 +47,7 @@ export class Fava {
 
   }
 
-  private async init(config: FavaServerConfig) {
+  private async init(config: FavaConfig) {
 
     await this.initLocations(config);
 
@@ -82,7 +82,7 @@ export class Fava {
 
   }
 
-  private async initLocations(config: FavaServerConfig) {
+  private async initLocations(config: FavaConfig) {
 
     if (!config.locations || config.locations.length === 0) {
       this.logger.log(`No locations specified; discovering local drives...`);
@@ -96,7 +96,7 @@ export class Fava {
 
   }
 
-  private initServer(config: FavaServerConfig) {
+  private initServer(config: FavaConfig) {
 
     if (config.server) {
       this.logger.log(`Using existing HTTP server`);

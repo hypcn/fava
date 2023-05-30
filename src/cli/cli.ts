@@ -3,7 +3,7 @@
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
 import { Fava } from "../core/main";
-import { FavaServerInterfaceConfig } from "../core/interfaces/server-config.interface";
+import { FavaInterfaceConfig } from "../core/interfaces/fava-config.interface";
 import { LogLevel } from "@hypericon/axe";
 
 const argsParser = yargs(hideBin(process.argv))
@@ -55,14 +55,14 @@ async function cli() {
 
 cli();
 
-function argAsInterfaceConfig(arg: any): FavaServerInterfaceConfig {
+function argAsInterfaceConfig(arg: any): FavaInterfaceConfig {
 
   if (arg === true) {
     return true;
   }
 
   if (typeof arg === "string") {
-    const config: FavaServerInterfaceConfig = {
+    const config: FavaInterfaceConfig = {
       read: arg.toLowerCase().includes("read") || arg.toLowerCase().includes("write"),
       write: arg.toLowerCase().includes("write"),
     };

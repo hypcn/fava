@@ -3,7 +3,7 @@ import { Server } from "http";
 import { FavaLocation } from "../../shared";
 
 /** Configure whether an interface is enabled, and if so, with what capabilities */
-export type FavaServerInterfaceConfig =
+export type FavaInterfaceConfig =
   | {
     read: boolean,
     write: boolean,
@@ -11,7 +11,7 @@ export type FavaServerInterfaceConfig =
   | boolean
   ;
 
-export interface FavaServerConfig {
+export interface FavaConfig {
 
   /** Optionally specify an existing HTTP server to use, otherwise a new one will be created */
   server?: Server,
@@ -32,13 +32,13 @@ export interface FavaServerConfig {
   locations?: FavaLocation[],
 
   /** Configure whether the HTTP API is enabled, and if so, with what capabilities */
-  http?: FavaServerInterfaceConfig,
+  http?: FavaInterfaceConfig,
 
   /** Configure whether the websocket API is enabled, and if so, with what capabilities */
-  ws?: FavaServerInterfaceConfig,
+  ws?: FavaInterfaceConfig,
 
   /** Configure whether the web UI is enabled, and if so, with what capabilities */
-  ui?: FavaServerInterfaceConfig,
+  ui?: FavaInterfaceConfig,
 
   /** Optionally provide a function to get custom logger objects overriding the default logger */
   getLogger?: (context?: string) => SimpleLogger,

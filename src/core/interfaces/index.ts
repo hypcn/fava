@@ -1,2 +1,2 @@
 
-export * from "./server-config.interface";
+export * from "./fava-config.interface";

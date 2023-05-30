@@ -1,12 +1,12 @@
 import { Logger } from "@hypericon/axe";
 import cors from "cors";
 import { Express, Request, Response, json, raw, text, urlencoded } from "express";
-import { FavaServerConfig } from "./interfaces";
+import { FavaConfig } from "./interfaces";
 import { backslashToForward } from "./utils";
 
 const logger = new Logger("HTTP");
 
-export function configureMiddleware(app: Express, config: FavaServerConfig) {
+export function configureMiddleware(app: Express, config: FavaConfig) {
   logger.debug(`Adding middleware...`);
 
   // No error handlers here
