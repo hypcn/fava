@@ -94,7 +94,7 @@ export function configureHttpApi(app: Express, core: FavaCore, options: {
     
     else if (isExists) {
       logger.debug(`GET: exists:`, locationId, path);
-      const exists = await core.pathExists(locationId, path);
+      const exists = await core.exists(locationId, path);
       const result: PathExistsResult = {
         exists,
       };
@@ -213,7 +213,7 @@ export function configureHttpApi(app: Express, core: FavaCore, options: {
 
     else {
       logger.debug(`PATCH: write:`, locationId, path);
-      await core.write(locationId, path, body, {
+      await core.writeBytes(locationId, path, body, {
         // range?
       });
       const result: UpdateResult = {

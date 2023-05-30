@@ -19,10 +19,12 @@
     "build-ui": "vite build",
     "prepublishOnly": "npm run build",
     "start": "node dist/cli/cli.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest --runInBand",
+    "coverage": "jest --runInBand --coverage"
   },
   "dependencies": {
     "@hypericon/axe": "^0.5.4",
+    "@hypericon/utils": "^0.5.2",
     "cors": "^2.8.5",
     "drivelist": "^11.1.0",
     "express": "^4.18.2",
@@ -30,6 +32,7 @@
     "fs-extra": "^11.1.1",
     "mime": "^3.0.0",
     "node-fetch": "^2.6.9",
+    "rxjs": "^7.8.1",
     "url-join": "^4.0.1",
     "ws": "^8.13.0",
     "yargs": "^17.7.1"

@@ -9,11 +9,16 @@ const adapters: { [key in FavaLocationType]: IFavaAdapter<FavaLocation> } = {
   Fava: new FavaAdapter(),
 };
 
+/**
+ * @internal
+ */
 export class FavaCore {
 
   private logger = new Logger("Core");
 
   locations: FavaLocation[] = [];
+
+  adapters: IFavaAdapter<FavaLocation>[] = [];
 
   constructor() {}
 
@@ -28,17 +33,18 @@ export class FavaCore {
   }
 
   getAdapter(location: FavaLocation): IFavaAdapter<FavaLocation> {
-    const adapter = adapters[location.type];
+    const adapter = this.adapters.find(a => a.getType() === location.type);
+    if (!adapter) throw new Error(`Adapter not found for location type: ${location.type}`);
     return adapter;
   }
 
   // ========== READ
 
-  async dir(locId: string, dirPath: string) {
-    this.logger.debug(`dir`, locId, dirPath);
+  async exists(locId: string, path: string): Promise<boolean> {
+    this.logger.debug(`pathExists`, locId, path);
     const loc = this.findLocation(locId);
     const adapter = this.getAdapter(loc);
-    return adapter.ls(loc, dirPath);
+    return adapter.exists(loc, path);
   }
 
   async ls(locId: string, dirPath: string) {
@@ -48,18 +54,11 @@ export class FavaCore {
     return adapter.ls(loc, dirPath);
   }
 
-  async pathExists(locId: string, path: string): Promise<boolean> {
-    this.logger.debug(`pathExists`, locId, path);
-    const loc = this.findLocation(locId);
-    const adapter = this.getAdapter(loc);
-    return adapter.pathExists(loc, path);
-  }
-
-  async read(locId: string, filePath: string, options?: ReadBytesOptions) {
+  async readBytes(locId: string, filePath: string, options?: ReadBytesOptions) {
     this.logger.debug(`read`, locId, filePath, options);
     const loc = this.findLocation(locId);
     const adapter = this.getAdapter(loc);
-    return adapter.read(loc, filePath, options);
+    return adapter.readBytes(loc, filePath, options);
   }
 
   async readDir(locId: string, dirPath: string) {
@@ -164,11 +163,11 @@ export class FavaCore {
     return adapter.ensureFile(loc, filePath)
   }
 
-  async write(locId: string, filePath: string, data: FileData, options?: WriteBytesOptions) {
-    this.logger.debug(`write`, locId, filePath, data, options);
+  async writeBytes(locId: string, filePath: string, data: FileData, options?: WriteBytesOptions) {
+    this.logger.debug(`writeBytes`, locId, filePath, data, options);
     const loc = this.findLocation(locId);
     const adapter = this.getAdapter(loc);
-    return adapter.write(loc, filePath, data, options);
+    return adapter.writeBytes(loc, filePath, data, options);
   }
 
   async writeFile(locId: string, filePath: string, data: FileData, options?: WriteFileOptions) {

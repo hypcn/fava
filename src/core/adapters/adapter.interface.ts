@@ -71,6 +71,8 @@ export interface IFavaAdapter<T extends FavaLocation> {
 
   ensureDir(loc: T, dirPath: string): Promise<void>;
 
+  exists(loc: T, path: string): Promise<boolean>;
+
   ls(loc: T, dirPath: string): Promise<DirInfo>;
 
   // mkdir(loc: T, dirPath: string): Promise<void>;
@@ -79,9 +81,7 @@ export interface IFavaAdapter<T extends FavaLocation> {
 
   outputFile(loc: T, filePath: string, data: FileData, options?: WriteFileOptions): Promise<void>;
 
-  pathExists(loc: T, path: string): Promise<boolean>;
-
-  read(loc: T, filePath: string, options?: ReadBytesOptions): Promise<ReadFileResult>;
+  readBytes(loc: T, filePath: string, options?: ReadBytesOptions): Promise<ReadFileResult>;
 
   // readDir(loc: T, dirPath: string): Promise<DirInfo>;
 
@@ -100,7 +100,7 @@ export interface IFavaAdapter<T extends FavaLocation> {
    * @param data 
    * @param options 
    */
-  write(loc: T, filePath: string, data: FileData, options?: WriteBytesOptions): Promise<WriteBytesResult>;
+  writeBytes(loc: T, filePath: string, data: FileData, options?: WriteBytesOptions): Promise<WriteBytesResult>;
 
   /**
    * Write data to a file, replacing it if it already existed

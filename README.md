@@ -55,6 +55,18 @@ TODO
 TODO: detail the options of the server constructor
 - and client constructor
 
+# Development
+
+Compile and watch the source, and start a hot-reloading web server for the UI:
+
+`npm run dev`
+
+Run tests:
+
+`npm test`
+
+> `--runInBand` is set to enable re-using the port number between serial tests
+
 # TODO
 
 Core

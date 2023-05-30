@@ -11,6 +11,13 @@ export type FavaInterfaceConfig =
   | boolean
   ;
 
+export interface FavaInterfaceInfo {
+  // name: string,
+  enabled: boolean,
+  canRead: boolean,
+  canWrite: boolean,
+}
+
 export interface FavaConfig {
 
   /** Optionally specify an existing HTTP server to use, otherwise a new one will be created */
@@ -25,7 +32,7 @@ export interface FavaConfig {
 
   /** Optionally specify a prefix for server HTTP routes */
   routePrefix?: string,
-  
+
   /**
    * 
    */

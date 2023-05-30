@@ -53,6 +53,12 @@ export class FsAdapter implements IFavaAdapter<FavaLocation_FS> {
     await fse.ensureDir(path);
   }
 
+  async exists(loc: FavaLocation_FS, path: string): Promise<boolean> {
+    this.logger.verbose(`pathExists:`, loc.id, path);
+    const fullPath = join(loc.root, path);
+    return fse.pathExists(fullPath);
+  }
+
   async ls(loc: FavaLocation_FS, dirPath: string): Promise<DirInfo> {
     this.logger.verbose(`ls:`, loc.id, dirPath);
     const lsPath = join(loc.root, dirPath);
@@ -101,14 +107,8 @@ export class FsAdapter implements IFavaAdapter<FavaLocation_FS> {
     });
   }
 
-  async pathExists(loc: FavaLocation_FS, path: string): Promise<boolean> {
-    this.logger.verbose(`pathExists:`, loc.id, path);
-    const fullPath = join(loc.root, path);
-    return fse.pathExists(fullPath);
-  }
-
   // fails if file doesn't exist
-  async read(loc: FavaLocation_FS, filePath: string, options?: ReadBytesOptions): Promise<ReadFileResult> {
+  async readBytes(loc: FavaLocation_FS, filePath: string, options?: ReadBytesOptions): Promise<ReadFileResult> {
     this.logger.verbose(`read:`, loc.id, filePath);
     // fse.read()
     throw new Error("Not implemented: read()");
@@ -166,7 +166,7 @@ export class FsAdapter implements IFavaAdapter<FavaLocation_FS> {
   }
 
   // fails if file doesn't exist
-  async write(loc: FavaLocation_FS, filePath: string, data: FileData, options?: WriteBytesOptions): Promise<WriteBytesResult> {
+  async writeBytes(loc: FavaLocation_FS, filePath: string, data: FileData, options?: WriteBytesOptions): Promise<WriteBytesResult> {
     this.logger.verbose(`write:`, loc.id, filePath);
     throw new Error("Not implemented: write()");
     // TODO
