@@ -1,5 +1,5 @@
 
-describe("Fava CLI", () => {
+describe("Client", () => {
 
   test("", () => {
     // 
