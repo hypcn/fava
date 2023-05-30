@@ -7,19 +7,22 @@ import { FavaServerInterfaceConfig } from "../core/interfaces/server-config.inte
 import { LogLevel } from "@hypericon/axe";
 
 const argsParser = yargs(hideBin(process.argv))
-  .usage(`USAGE:\nTODO`)
+  .usage(`USAGE:
+Enable features with "read" or "write" to configure permissions,
+or leave blank for default (read & write)
+E.g.: \`fava --http --ws=read --ui=write\``)
   .help('h').alias('h', 'help')
   .option("http", {
-    type: "boolean",
+    type: "string",
     describe: `Enable or configure the HTTP API`,
   })
   .option("ws", {
-    type: "boolean",
-    describe: "Enable or configure the websocket API",
+    type: "string",
+    describe: `Enable or configure the websocket API`,
   })
   .option("ui", {
-    type: "boolean",
-    describe: "Enable or configure the web interface",
+    type: "string",
+    describe: `Enable or configure the web interface`,
   })
   .option("port", {
     alias: ["p"],
@@ -27,9 +30,8 @@ const argsParser = yargs(hideBin(process.argv))
     describe: "Specify the port (default: 6131)",
   })
   .option("loglevel", {
-    // alias: [""],
     type: "string",
-    describe: `Specify the log level, one of "error", "warn", "log", "debug", default: "log" `,
+    describe: `Specify the log level, one of: error, warn, log (default), debug`,
   })
   .epilog('(https://github.com/hypcn/fava)')
   ;
@@ -61,7 +63,7 @@ function argAsInterfaceConfig(arg: any): FavaServerInterfaceConfig {
 
   if (typeof arg === "string") {
     const config: FavaServerInterfaceConfig = {
-      read: arg.toLowerCase().includes("read"),
+      read: arg.toLowerCase().includes("read") || arg.toLowerCase().includes("write"),
       write: arg.toLowerCase().includes("write"),
     };
     return config;

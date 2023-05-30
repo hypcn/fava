@@ -6,7 +6,7 @@ import { FavaLocation } from "../../shared";
 export type FavaServerInterfaceConfig =
   | {
     read: boolean,
-    write: boolean
+    write: boolean,
   }
   | boolean
   ;
