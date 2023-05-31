@@ -17,7 +17,7 @@ export interface FileInfo {
   /** The file extension, if any, including the leading "." */
   ext: string,
   
-  /** The mime type of the file, or empty string for folders or unknown extensions */
+  /** The mime type of the file. Empty string for folders, or files with unknown extensions */
   mimeType: string,
   /** If the item is a directory */
   isDir: boolean,

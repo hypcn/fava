@@ -3,8 +3,8 @@ import * as fse from "fs-extra";
 import mime from "mime";
 import { join, parse } from "path";
 import { DirInfo, FavaLocation_FS, FileInfo } from "../../shared";
-import { CopyOptions, FileData, IFavaAdapter, MoveOptions, ReadChunkOptions, ReadFileOptions, ReadFileResult, WriteChunkOptions, WriteChunkResult, WriteFileOptions } from "./adapter.interface";
 import { backslashToForward } from "../utils";
+import { CopyOptions, FileData, IFavaAdapter, MoveOptions, ReadChunkOptions, ReadFileOptions, ReadFileResult, WriteChunkOptions, WriteChunkResult, WriteFileOptions } from "./adapter.interface";
 
 export class FsAdapter implements IFavaAdapter<FavaLocation_FS> {
 
@@ -172,11 +172,31 @@ export class FsAdapter implements IFavaAdapter<FavaLocation_FS> {
   // fails if file doesn't exist
   async writeFileChunk(loc: FavaLocation_FS, filePath: string, data: FileData, options?: WriteChunkOptions): Promise<WriteChunkResult> {
     this.logger.verbose(`writeFileChunk:`, loc.id, filePath);
-    throw new Error("Not implemented: write()");
-    // TODO
 
-    // fse.write()
-    
+    // Ensure the file exists before attempting to write a chunk
+    const fullPath = join(loc.root, filePath);
+    const fileExists = await fse.pathExists(fullPath);
+
+    if (!fileExists) {
+      throw new Error(`File not found: ${filePath}`);
+    }
+
+    // Set default options
+    const encoding = (options?.encoding || 'utf8') as BufferEncoding;
+    const offset = options?.offset || 0;
+    const length = options?.length || (data instanceof Buffer ? data.length : Buffer.byteLength(data, encoding));
+    const position = options?.position || null;
+
+    // Write the chunk to the file
+    const fd = await fse.open(fullPath, 'r+');
+    try {
+      const dataBuffer = typeof data === "string" ? Buffer.from(data, "utf8") : data;
+      const { bytesWritten, buffer } = await fse.write(fd, dataBuffer, offset, length, position);
+      return { bytesWritten };
+    } finally {
+      await fse.close(fd);
+    }
+
   }
 
 }
