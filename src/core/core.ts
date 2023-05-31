@@ -56,13 +56,6 @@ export class FavaCore {
     return adapter.exists(loc, path);
   }
 
-  async ls(locId: string, dirPath: string) {
-    this.logger.debug(`ls`, locId, dirPath);
-    const loc = this.findLocation(locId);
-    const adapter = this.getAdapter(loc);
-    return adapter.ls(loc, dirPath);
-  }
-
   async readBytes(locId: string, filePath: string, options?: ReadBytesOptions) {
     this.logger.debug(`read`, locId, filePath, options);
     const loc = this.findLocation(locId);
@@ -124,13 +117,6 @@ export class FavaCore {
 
   async ensureDir(locId: string, dirPath: string) {
     this.logger.debug(`ensureDir`, locId, dirPath);
-    const loc = this.findLocation(locId);
-    const adapter = this.getAdapter(loc);
-    return adapter.ensureDir(loc, dirPath);
-  }
-
-  async mkdir(locId: string, dirPath: string) {
-    this.logger.debug(`mkdir`, locId, dirPath);
     const loc = this.findLocation(locId);
     const adapter = this.getAdapter(loc);
     return adapter.ensureDir(loc, dirPath);

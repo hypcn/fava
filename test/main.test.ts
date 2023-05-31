@@ -179,10 +179,10 @@ describe("Fava", () => {
     const coreSpy_ensureDir = jest.spyOn(core, "ensureDir").mockImplementation(async () => undefined);
     const coreSpy_ensureFile = jest.spyOn(core, "ensureFile").mockImplementation(async () => undefined);
     const coreSpy_exists = jest.spyOn(core, "exists").mockImplementation(async () => (undefined as any));
-    const coreSpy_ls = jest.spyOn(core, "ls").mockImplementation(async () => (undefined as any));
     const coreSpy_move = jest.spyOn(core, "move").mockImplementation(async () => undefined);
     const coreSpy_outputFile = jest.spyOn(core, "outputFile").mockImplementation(async () => undefined);
     const coreSpy_readBytes = jest.spyOn(core, "readBytes").mockImplementation(async () => (undefined as any));
+    const coreSpy_readDir = jest.spyOn(core, "readDir").mockImplementation(async () => (undefined as any));
     const coreSpy_readFile = jest.spyOn(core, "readFile").mockImplementation(async () => (undefined as any));
     const coreSpy_remove = jest.spyOn(core, "remove").mockImplementation(async () => undefined);
     const coreSpy_rename = jest.spyOn(core, "rename").mockImplementation(async () => undefined);
@@ -209,7 +209,7 @@ describe("Fava", () => {
     expect(coreSpy_exists).toHaveBeenCalled();
 
     await fava.ls(testLocationOne.id, "dir");
-    expect(coreSpy_ls).toHaveBeenCalled();
+    expect(coreSpy_readDir).toHaveBeenCalled();
 
     await fava.move(testLocationOne.id, "file.txt", testLocationTwo.id, "dir/file.txt");
     expect(coreSpy_move).toHaveBeenCalled();
@@ -219,6 +219,9 @@ describe("Fava", () => {
 
     await fava.readBytes(testLocationOne.id, "file.txt", { length: 1, position: 1 });
     expect(coreSpy_readBytes).toHaveBeenCalled();
+
+    await fava.readDir(testLocationOne.id, "dir");
+    expect(coreSpy_readDir).toHaveBeenCalled();
 
     await fava.readFile(testLocationOne.id, "file.txt");
     expect(coreSpy_readFile).toHaveBeenCalled();

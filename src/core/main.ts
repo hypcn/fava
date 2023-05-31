@@ -360,10 +360,10 @@ export class Fava {
     return this.core.exists(locId, path);
   }
   async ls(locId: string, dirPath: string) {
-    return this.core.ls(locId, dirPath);
+    return this.core.readDir(locId, dirPath);
   }
   async mkdir(locId: string, dirPath: string) {
-    return this.core.mkdir(locId, dirPath);
+    return this.core.ensureDir(locId, dirPath);
   }
   async move(srcLocId: string, srcPath: string, destLocId: string, destPath: string, options?: MoveOptions) {
     return this.core.move(srcLocId, srcPath, destLocId, destPath, options);

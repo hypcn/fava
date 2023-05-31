@@ -36,7 +36,7 @@ export interface FavaLocation_FS extends IFavaLocation {
 export interface FavaLocation_Fava extends IFavaLocation {
   type: "Fava",
   id: string,
-  /** The ID od the target location on the remote Fava server */
+  /** The ID of the target location on the remote Fava server */
   remoteId: string,
   name: string,
   origin: string,
