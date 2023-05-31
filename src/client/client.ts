@@ -1,11 +1,11 @@
 import urlJoin from "url-join";
 import { GetLocationsResult, GetStatsResult, PathExistsResult, ReadDirResult, UpdateResult } from "../shared";
-import { FavaClientConfig } from "./client-config.interface";
+import { FavaClientOptions } from "./client-options.interface";
 import fetch from "node-fetch";
 
 export interface FileData {
   data: string | Uint8Array,
-  mimeType: string
+  mimeType: string,
 }
 
 const DEFAULT_ORIGIN = "http://localhost:6131";
@@ -19,14 +19,14 @@ export class FavaClient {
   private _apiPrefix: string;
   get apiPrefix() { return this._apiPrefix; }
 
-  constructor(config: FavaClientConfig) {
+  constructor(options?: FavaClientOptions) {
 
     // if (config.fetch) this._fetch = config.fetch;
     if (!this._fetch) throw new Error("No `fetch(...)` implementation provided!");
     // if (window) this._fetch.bind(window);
 
-    const origin = config.origin || DEFAULT_ORIGIN;
-    const routePrefix = config.routePrefix || "";
+    const origin = options?.origin || DEFAULT_ORIGIN;
+    const routePrefix = options?.routePrefix || "";
 
     this._apiPrefix = urlJoin(origin, routePrefix, "/api");
 
@@ -56,7 +56,7 @@ export class FavaClient {
     return result;
   }
 
-  async getStats(locationId: string, path: string): Promise<GetStatsResult> {
+  async stats(locationId: string, path: string): Promise<GetStatsResult> {
 
     const url = urlJoin(this.apiPrefix, `/${locationId}/${path}?stats`);
 
@@ -68,7 +68,7 @@ export class FavaClient {
     return result;
   }
 
-  async pathExists(locationId: string, path: string): Promise<PathExistsResult> {
+  async exists(locationId: string, path: string): Promise<PathExistsResult> {
     
     const url = urlJoin(this.apiPrefix, `/${locationId}/${path}?exists`);
 
@@ -204,7 +204,7 @@ export class FavaClient {
     return result;
   }
 
-  async write(locationId: string, path: string, file: FileData, range: any): Promise<UpdateResult> {
+  async write(locationId: string, path: string, file: FileData, range?: any): Promise<UpdateResult> {
 
     const url = urlJoin(this.apiPrefix, `/${locationId}/${path}`);
 

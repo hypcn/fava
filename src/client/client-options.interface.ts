@@ -1,5 +1,5 @@
 
-export interface FavaClientConfig {
+export interface FavaClientOptions {
 
   /**
    * 
