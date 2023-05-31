@@ -1,7 +1,7 @@
 import { CopyOptions, FileData, IFavaAdapter, MoveOptions, ReadBytesOptions, ReadFileOptions, ReadFileResult, WriteBytesOptions, WriteBytesResult, WriteFileOptions } from "./adapter.interface";
 // import * as fse from "fs-extra";
 import { Logger } from "@hypericon/axe";
-import fetch from "node-fetch";
+// import fetch from "node-fetch";
 import { FavaClient } from "../../client";
 import { DirInfo, FavaLocation_Fava } from "../../shared";
 
@@ -24,7 +24,7 @@ export class FavaAdapter implements IFavaAdapter<FavaLocation_Fava> {
 
     this.logger.log(`Creating new client for Fava location with ID: ${location.id} (${location.origin})`);
     const client = new FavaClient({
-      fetch: fetch as any,
+      // fetch: fetch as any,
       origin: location.origin,
       routePrefix: location.routePrefix,
     });

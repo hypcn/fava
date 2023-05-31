@@ -11,11 +11,11 @@ export interface FavaClientConfig {
 
   // TODO: auth?
 
-  /**
-   * Provide an implementation for `fetch()` when using the client on the server
-   * 
-   * E.g.: https://github.com/node-fetch/node-fetch
-   */
-  fetch?: typeof fetch,
+  // /**
+  //  * Provide an implementation for `fetch()` when using the client on the server
+  //  * 
+  //  * E.g.: https://github.com/node-fetch/node-fetch
+  //  */
+  // fetch?: typeof fetch,
 
 }
