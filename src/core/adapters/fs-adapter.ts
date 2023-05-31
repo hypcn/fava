@@ -4,7 +4,7 @@ import mime from "mime";
 import { join, parse } from "path";
 import { DirInfo, FavaLocation_FS, FileInfo } from "../../shared";
 import { backslashToForward } from "../utils";
-import { CopyOptions, FileData, IFavaAdapter, MoveOptions, ReadChunkOptions, ReadFileOptions, ReadFileResult, WriteChunkOptions, WriteChunkResult, WriteFileOptions } from "./adapter.interface";
+import { CopyOptions, FileData, IFavaAdapter, MoveOptions, ReadChunkOptions, ReadChunkResult, ReadFileOptions, ReadFileResult, WriteChunkOptions, WriteChunkResult, WriteFileOptions } from "./adapter.interface";
 
 export class FsAdapter implements IFavaAdapter<FavaLocation_FS> {
 
@@ -75,14 +75,6 @@ export class FsAdapter implements IFavaAdapter<FavaLocation_FS> {
     });
   }
 
-  // fails if file doesn't exist
-  async readFileChunk(loc: FavaLocation_FS, filePath: string, options?: ReadChunkOptions): Promise<ReadFileResult> {
-    this.logger.verbose(`read:`, loc.id, filePath);
-    // fse.read()
-    throw new Error("Not implemented: read()");
-    // TODO
-  }
-
   async readDir(loc: FavaLocation_FS, dirPath: string): Promise<DirInfo> {
     this.logger.verbose(`ls:`, loc.id, dirPath);
     const lsPath = join(loc.root, dirPath);
@@ -114,6 +106,36 @@ export class FsAdapter implements IFavaAdapter<FavaLocation_FS> {
     return fse.readFile(path, {
       encoding: options?.encoding,
     });
+  }
+
+  // fails if file doesn't exist
+  async readFileChunk(loc: FavaLocation_FS, filePath: string, options?: ReadChunkOptions): Promise<ReadChunkResult> {
+    this.logger.verbose(`read:`, loc.id, filePath);
+
+    // Ensure the file exists before attempting to read a chunk
+    const fullPath = join(loc.root, filePath);
+    const fileExists = await fse.pathExists(fullPath);
+
+    if (!fileExists) {
+      throw new Error(`File not found: ${filePath}`);
+    }
+
+    // Set default options
+    const encoding = options?.encoding || 'utf8';
+    const position = options?.position || 0;
+    const length = options?.length || (await fs.promises.stat(fullPath)).size - position;
+
+    // Read the chunk from the file
+    const buffer = options?.buffer ?? Buffer.alloc(length);
+    const fd = await fse.open(fullPath, 'r');
+    try {
+      const { bytesRead } = await fse.read(fd, buffer, 0, length, position);
+      const data = encoding === 'buffer' ? buffer.slice(0, bytesRead) : buffer.toString(encoding, 0, bytesRead);
+      return { bytesRead, data };
+    } finally {
+      await fse.close(fd);
+    }
+
   }
 
   async remove(loc: FavaLocation_FS, path: string): Promise<void> {

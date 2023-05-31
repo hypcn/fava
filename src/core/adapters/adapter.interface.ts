@@ -17,6 +17,7 @@ export interface ReadFileOptions {
 }
 
 export interface ReadChunkOptions {
+  encoding?: string,
   /** The buffer to write the data to */
   buffer?: Buffer,
   /** The offset within the buffer to start writing at */
@@ -28,6 +29,11 @@ export interface ReadChunkOptions {
 }
 
 export type ReadFileResult = Buffer | string;
+
+export interface ReadChunkResult {
+  data: string | Buffer,
+  bytesRead: number,
+}
 
 export interface WriteChunkOptions {
   /** When the data is a string, specify the encoding (default: "utf8") */
@@ -77,7 +83,7 @@ export interface IFavaAdapter<T extends FavaLocation> {
 
   readFile(loc: T, filePath: string, options?: ReadFileOptions): Promise<ReadFileResult>;
 
-  readFileChunk(loc: T, filePath: string, options?: ReadChunkOptions): Promise<ReadFileResult>;
+  readFileChunk(loc: T, filePath: string, options?: ReadChunkOptions): Promise<ReadChunkResult>;
 
   remove(loc: T, path: string): Promise<void>;
 

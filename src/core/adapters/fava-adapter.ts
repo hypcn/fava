@@ -1,4 +1,4 @@
-import { CopyOptions, FileData, IFavaAdapter, MoveOptions, ReadChunkOptions, ReadFileOptions, ReadFileResult, WriteChunkOptions, WriteChunkResult, WriteFileOptions } from "./adapter.interface";
+import { CopyOptions, FileData, IFavaAdapter, MoveOptions, ReadChunkOptions, ReadChunkResult, ReadFileOptions, ReadFileResult, WriteChunkOptions, WriteChunkResult, WriteFileOptions } from "./adapter.interface";
 // import * as fse from "fs-extra";
 import { Logger } from "@hypericon/axe";
 // import fetch from "node-fetch";
@@ -88,7 +88,7 @@ export class FavaAdapter implements IFavaAdapter<FavaLocation_Fava> {
     // return result;
   }
 
-  async readFileChunk(loc: FavaLocation_Fava, filePath: string, options?: ReadChunkOptions): Promise<ReadFileResult> {
+  async readFileChunk(loc: FavaLocation_Fava, filePath: string, options?: ReadChunkOptions): Promise<ReadChunkResult> {
     throw new Error(`Not implemented`);
     // const client = this.getClient(loc);
     // // TODO
