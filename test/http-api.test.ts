@@ -98,7 +98,7 @@ describe("HTTP API", () => {
     const apiResult = await fava.readDir(locationId, path);
 
     // expect(httpResult.dirInfo).toMatchObject(apiResult);
-    expect(testAdapterSpies.ls).toHaveBeenCalledTimes(2);
+    expect(testAdapterSpies.readDir).toHaveBeenCalledTimes(2);
   });
 
   test("GET - stats", async () => {
@@ -272,9 +272,9 @@ describe("HTTP API", () => {
     });
     const httpResult = (await response.json()) as UpdateResult;
 
-    const apiResult = await fava.writeBytes(locationId, filePath, data);
+    const apiResult = await fava.writeFileChunk(locationId, filePath, data);
 
-    expect(testAdapterSpies.writeBytes).toHaveBeenCalledTimes(2);
+    expect(testAdapterSpies.writeFileChunk).toHaveBeenCalledTimes(2);
   });
 
   test("DELETE - emptyDir", async () => {

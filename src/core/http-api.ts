@@ -213,7 +213,7 @@ export function configureHttpApi(app: Express, core: FavaCore, options: {
 
     else {
       logger.debug(`PATCH: write:`, locationId, path);
-      await core.writeBytes(locationId, path, body, {
+      await core.writeFileChunk(locationId, path, body, {
         // range?
       });
       const result: UpdateResult = {

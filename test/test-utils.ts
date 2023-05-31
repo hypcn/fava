@@ -10,15 +10,15 @@ export function mockAndSpyOnAdapter(adapter: IFavaAdapter<FavaLocation>) {
     ensureFile: jest.spyOn(adapter, "ensureFile").mockImplementation(async () => undefined),
     ensureDir: jest.spyOn(adapter, "ensureDir").mockImplementation(async () => undefined),
     exists: jest.spyOn(adapter, "exists").mockImplementation(async () => (undefined as any)),
-    ls: jest.spyOn(adapter, "ls").mockImplementation(async () => (undefined as any)),
     move: jest.spyOn(adapter, "move").mockImplementation(async () => undefined),
-    readBytes: jest.spyOn(adapter, "readBytes").mockImplementation(async () => (undefined as any)),
+    readDir: jest.spyOn(adapter, "readDir").mockImplementation(async () => (undefined as any)),
     readFile: jest.spyOn(adapter, "readFile").mockImplementation(async () => (undefined as any)),
+    readFileChunk: jest.spyOn(adapter, "readFileChunk").mockImplementation(async () => (undefined as any)),
     remove: jest.spyOn(adapter, "remove").mockImplementation(async () => undefined),
     rename: jest.spyOn(adapter, "rename").mockImplementation(async () => undefined),
     stat: jest.spyOn(adapter, "stat").mockImplementation(async () => (undefined as any)),
-    writeBytes: jest.spyOn(adapter, "writeBytes").mockImplementation(async () => (undefined as any)),
     writeFile: jest.spyOn(adapter, "writeFile").mockImplementation(async () => undefined),
+    writeFileChunk: jest.spyOn(adapter, "writeFileChunk").mockImplementation(async () => (undefined as any)),
   };
   return adapterSpy;
 }
@@ -32,14 +32,14 @@ export function mockAndSpyOnCore(core: FavaCore) {
     ensureFile: jest.spyOn(core, "ensureFile").mockImplementation(async () => undefined),
     exists: jest.spyOn(core, "exists").mockImplementation(async () => (undefined as any)),
     move: jest.spyOn(core, "move").mockImplementation(async () => undefined),
-    readBytes: jest.spyOn(core, "readBytes").mockImplementation(async () => (undefined as any)),
     readDir: jest.spyOn(core, "readDir").mockImplementation(async () => (undefined as any)),
     readFile: jest.spyOn(core, "readFile").mockImplementation(async () => (undefined as any)),
+    readFileChunk: jest.spyOn(core, "readFileChunk").mockImplementation(async () => (undefined as any)),
     remove: jest.spyOn(core, "remove").mockImplementation(async () => undefined),
     rename: jest.spyOn(core, "rename").mockImplementation(async () => undefined),
     stat: jest.spyOn(core, "stat").mockImplementation(async () => (undefined as any)),
-    writeBytes: jest.spyOn(core, "writeBytes").mockImplementation(async () => (undefined as any)),
     writeFile: jest.spyOn(core, "writeFile").mockImplementation(async () => undefined),
+    writeFileChunk: jest.spyOn(core, "writeFileChunk").mockImplementation(async () => (undefined as any)),
   };
   return coreSpy;
 }

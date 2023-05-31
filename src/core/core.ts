@@ -1,6 +1,6 @@
 import { Logger } from "@hypericon/axe";
 import { FavaLocation, FavaLocationType } from "../shared";
-import { CopyOptions, FileData, IFavaAdapter, MoveOptions, ReadBytesOptions, ReadFileOptions, WriteBytesOptions, WriteFileOptions } from "./adapters/adapter.interface";
+import { CopyOptions, FileData, IFavaAdapter, MoveOptions, ReadChunkOptions, ReadFileOptions, WriteChunkOptions, WriteFileOptions } from "./adapters/adapter.interface";
 import { FavaAdapter } from "./adapters/fava-adapter";
 import { FsAdapter } from "./adapters/fs-adapter";
 
@@ -56,18 +56,11 @@ export class FavaCore {
     return adapter.exists(loc, path);
   }
 
-  async readBytes(locId: string, filePath: string, options?: ReadBytesOptions) {
-    this.logger.debug(`read`, locId, filePath, options);
-    const loc = this.findLocation(locId);
-    const adapter = this.getAdapter(loc);
-    return adapter.readBytes(loc, filePath, options);
-  }
-
   async readDir(locId: string, dirPath: string) {
     this.logger.debug(`readDir`, locId, dirPath);
     const loc = this.findLocation(locId);
     const adapter = this.getAdapter(loc);
-    return adapter.ls(loc, dirPath);
+    return adapter.readDir(loc, dirPath);
   }
 
   async readFile(locId: string, filePath: string, options?: ReadFileOptions) {
@@ -75,6 +68,13 @@ export class FavaCore {
     const loc = this.findLocation(locId);
     const adapter = this.getAdapter(loc);
     return adapter.readFile(loc, filePath, options);
+  }
+
+  async readFileChunk(locId: string, filePath: string, options?: ReadChunkOptions) {
+    this.logger.debug(`read`, locId, filePath, options);
+    const loc = this.findLocation(locId);
+    const adapter = this.getAdapter(loc);
+    return adapter.readFileChunk(loc, filePath, options);
   }
 
   async stat(locId: string, path: string) {
@@ -151,18 +151,18 @@ export class FavaCore {
     return adapter.ensureFile(loc, filePath)
   }
 
-  async writeBytes(locId: string, filePath: string, data: FileData, options?: WriteBytesOptions) {
-    this.logger.debug(`writeBytes`, locId, filePath, data, options);
-    const loc = this.findLocation(locId);
-    const adapter = this.getAdapter(loc);
-    return adapter.writeBytes(loc, filePath, data, options);
-  }
-
   async writeFile(locId: string, filePath: string, data: FileData, options?: WriteFileOptions) {
     this.logger.debug(`writeFile`, locId, filePath, data, options);
     const loc = this.findLocation(locId);
     const adapter = this.getAdapter(loc);
     return adapter.writeFile(loc, filePath, data, options);
+  }
+
+  async writeFileChunk(locId: string, filePath: string, data: FileData, options?: WriteChunkOptions) {
+    this.logger.debug(`writeBytes`, locId, filePath, data, options);
+    const loc = this.findLocation(locId);
+    const adapter = this.getAdapter(loc);
+    return adapter.writeFileChunk(loc, filePath, data, options);
   }
 
   // ========== DELETE

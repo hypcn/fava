@@ -10,7 +10,13 @@ export interface MoveOptions {
   overwrite?: boolean,
 }
 
-export interface ReadBytesOptions {
+export interface ReadFileOptions {
+  /** To read the file as a string, specify an encoding */
+  encoding?: BufferEncoding,
+  // filesystem flags? string?
+}
+
+export interface ReadChunkOptions {
   /** The buffer to write the data to */
   buffer?: Buffer,
   /** The offset within the buffer to start writing at */
@@ -21,15 +27,9 @@ export interface ReadBytesOptions {
   position?: number,
 }
 
-export interface ReadFileOptions {
-  /** To read the file as a string, specify an encoding */
-  encoding?: BufferEncoding,
-  // filesystem flags? string?
-}
-
 export type ReadFileResult = Buffer | string;
 
-export interface WriteBytesOptions {
+export interface WriteChunkOptions {
   /** When the data is a string, specify the encoding (default: "utf8") */
   encoding?: string,
   // mode? integer?
@@ -42,7 +42,7 @@ export interface WriteBytesOptions {
   position?: number,
 }
 
-export interface WriteBytesResult {
+export interface WriteChunkResult {
   bytesWritten: number,
 }
 
@@ -71,28 +71,19 @@ export interface IFavaAdapter<T extends FavaLocation> {
 
   exists(loc: T, path: string): Promise<boolean>;
 
-  ls(loc: T, dirPath: string): Promise<DirInfo>
-
   move(srcLoc: T, srcPath: string, destLoc: T, destPath: string, options?: MoveOptions): Promise<void>;
 
-  readBytes(loc: T, filePath: string, options?: ReadBytesOptions): Promise<ReadFileResult>;
+  readDir(loc: T, dirPath: string): Promise<DirInfo>;
 
   readFile(loc: T, filePath: string, options?: ReadFileOptions): Promise<ReadFileResult>;
+
+  readFileChunk(loc: T, filePath: string, options?: ReadChunkOptions): Promise<ReadFileResult>;
 
   remove(loc: T, path: string): Promise<void>;
 
   rename(loc: T, oldPath: string, newPath: string): Promise<void>;
 
   stat(loc: T, path: string): Promise<FileInfo>;
-
-  /**
-   * Write some data to a specified section of an existing file
-   * @param loc 
-   * @param filePath 
-   * @param data 
-   * @param options 
-   */
-  writeBytes(loc: T, filePath: string, data: FileData, options?: WriteBytesOptions): Promise<WriteBytesResult>;
 
   /**
    * Write data to a file, ensuring the directory path, and replacing the file if it already existed
@@ -102,5 +93,14 @@ export interface IFavaAdapter<T extends FavaLocation> {
    * @param options 
    */
   writeFile(loc: T, filePath: string, data: FileData, options?: WriteFileOptions): Promise<void>;
+
+  /**
+   * Write some data to a specified section of an existing file
+   * @param loc 
+   * @param filePath 
+   * @param data 
+   * @param options 
+   */
+  writeFileChunk(loc: T, filePath: string, data: FileData, options?: WriteChunkOptions): Promise<WriteChunkResult>;
 
 }

@@ -199,14 +199,14 @@ describe("Fava", () => {
     await fava.move(testLocationOne.id, "file.txt", testLocationTwo.id, "dir/file.txt");
     expect(coreSpy.move).toHaveBeenCalled();
 
-    await fava.readBytes(testLocationOne.id, "file.txt", { length: 1, position: 1 });
-    expect(coreSpy.readBytes).toHaveBeenCalled();
-
     await fava.readDir(testLocationOne.id, "dir");
     expect(coreSpy.readDir).toHaveBeenCalled();
 
     await fava.readFile(testLocationOne.id, "file.txt");
     expect(coreSpy.readFile).toHaveBeenCalled();
+
+    await fava.readFileChunk(testLocationOne.id, "file.txt", { length: 1, position: 1 });
+    expect(coreSpy.readFileChunk).toHaveBeenCalled();
 
     await fava.remove(testLocationOne.id, "file.txt");
     expect(coreSpy.remove).toHaveBeenCalled();
@@ -217,12 +217,12 @@ describe("Fava", () => {
     await fava.stat(testLocationOne.id, "file.txt");
     expect(coreSpy.stat).toHaveBeenCalled();
 
-    await fava.writeBytes(testLocationOne.id, "file.txt", "data", { position: 1 });
-    expect(coreSpy.writeBytes).toHaveBeenCalled();
-
     await fava.writeFile(testLocationOne.id, "file.txt", "data");
     expect(coreSpy.writeFile).toHaveBeenCalled();
     
+    await fava.writeFileChunk(testLocationOne.id, "file.txt", "data", { position: 1 });
+    expect(coreSpy.writeFileChunk).toHaveBeenCalled();
+
     jest.clearAllMocks();
     await fava.destroy();
   });

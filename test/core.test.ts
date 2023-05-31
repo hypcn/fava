@@ -158,14 +158,14 @@ describe("Fava core", () => {
     // TODO: implement moving between location types
     expect(core.move(testLocationOne.id, "file.txt", testLocationFava.id, "file.txt")).rejects.toThrow();
 
-    await core.readBytes(testLocationOne.id, "file.txt");
-    expect(adapterSpy.readBytes).toHaveBeenCalled();
-
     await core.readDir(testLocationOne.id, "dir");
-    expect(adapterSpy.ls).toHaveBeenCalled();
+    expect(adapterSpy.readDir).toHaveBeenCalled();
 
     await core.readFile(testLocationOne.id, "file.txt");
     expect(adapterSpy.readFile).toHaveBeenCalled();
+
+    await core.readFileChunk(testLocationOne.id, "file.txt");
+    expect(adapterSpy.readFileChunk).toHaveBeenCalled();
 
     await core.remove(testLocationOne.id, "file.txt");
     expect(adapterSpy.remove).toHaveBeenCalled();
@@ -179,11 +179,11 @@ describe("Fava core", () => {
     await core.touch(testLocationOne.id, "file.txt");
     expect(adapterSpy.ensureFile).toHaveBeenCalled();
 
-    await core.writeBytes(testLocationOne.id, "file.txt", "data");
-    expect(adapterSpy.writeBytes).toHaveBeenCalled();
-
     await core.writeFile(testLocationOne.id, "file.txt", "data");
     expect(adapterSpy.writeFile).toHaveBeenCalled();
+
+    await core.writeFileChunk(testLocationOne.id, "file.txt", "data");
+    expect(adapterSpy.writeFileChunk).toHaveBeenCalled();
 
     jest.clearAllMocks();
 

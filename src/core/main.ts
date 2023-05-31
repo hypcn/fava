@@ -7,7 +7,7 @@ import { BehaviorSubject, filter, firstValueFrom, map } from "rxjs";
 import urlJoin from "url-join";
 import { WebSocketServer } from 'ws';
 import { FavaLocation, FavaLocation_FS } from "../shared";
-import { CopyOptions, FileData, MoveOptions, ReadBytesOptions, ReadFileOptions, WriteBytesOptions, WriteFileOptions } from "./adapters/adapter.interface";
+import { CopyOptions, FileData, MoveOptions, ReadChunkOptions, ReadFileOptions, WriteChunkOptions, WriteFileOptions } from "./adapters/adapter.interface";
 import { FavaAdapter } from "./adapters/fava-adapter";
 import { FsAdapter } from "./adapters/fs-adapter";
 import { FavaCore } from "./core";
@@ -368,14 +368,14 @@ export class Fava {
   async move(srcLocId: string, srcPath: string, destLocId: string, destPath: string, options?: MoveOptions) {
     return this.core.move(srcLocId, srcPath, destLocId, destPath, options);
   }
-  async readBytes(locId: string, filePath: string, options?: ReadBytesOptions) {
-    return this.core.readBytes(locId, filePath, options);
-  }
   async readDir(locId: string, dirPath: string) {
     return this.core.readDir(locId, dirPath);
   }
   async readFile(locId: string, filePath: string, options?: ReadFileOptions) {
     return this.core.readFile(locId, filePath, options);
+  }
+  async readFileChunk(locId: string, filePath: string, options?: ReadChunkOptions) {
+    return this.core.readFileChunk(locId, filePath, options);
   }
   async remove(locId: string, path: string) {
     return this.core.remove(locId, path);
@@ -389,11 +389,11 @@ export class Fava {
   async touch(locId: string, filePath: string) {
     return this.core.touch(locId, filePath);
   }
-  async writeBytes(locId: string, filePath: string, data: FileData, options?: WriteBytesOptions) {
-    return this.core.writeBytes(locId, filePath, data, options);
-  }
   async writeFile(locId: string, filePath: string, data: FileData, options?: WriteFileOptions) {
     return this.core.writeFile(locId, filePath, data, options);
+  }
+  async writeFileChunk(locId: string, filePath: string, data: FileData, options?: WriteChunkOptions) {
+    return this.core.writeFileChunk(locId, filePath, data, options);
   }
 
 }

@@ -3,7 +3,7 @@ import * as fse from "fs-extra";
 import mime from "mime";
 import { join, parse } from "path";
 import { DirInfo, FavaLocation_FS, FileInfo } from "../../shared";
-import { CopyOptions, FileData, IFavaAdapter, MoveOptions, ReadBytesOptions, ReadFileOptions, ReadFileResult, WriteBytesOptions, WriteBytesResult, WriteFileOptions } from "./adapter.interface";
+import { CopyOptions, FileData, IFavaAdapter, MoveOptions, ReadChunkOptions, ReadFileOptions, ReadFileResult, WriteChunkOptions, WriteChunkResult, WriteFileOptions } from "./adapter.interface";
 import { backslashToForward } from "../utils";
 
 export class FsAdapter implements IFavaAdapter<FavaLocation_FS> {
@@ -65,7 +65,25 @@ export class FsAdapter implements IFavaAdapter<FavaLocation_FS> {
     return fse.pathExists(fullPath);
   }
 
-  async ls(loc: FavaLocation_FS, dirPath: string): Promise<DirInfo> {
+  async move(fromLoc: FavaLocation_FS, fromPath: string, toLoc: FavaLocation_FS, toPath: string, options?: MoveOptions): Promise<void> {
+    this.logger.verbose(`move:`, fromLoc.id, fromPath, toLoc.id, toPath);
+    const fullSrcPath = join(fromLoc.root, fromPath);
+    const fullDestPath = join(toLoc.root, toPath);
+    return fse.move(fullSrcPath, fullDestPath, {
+      overwrite: options?.overwrite ?? false,
+      // dereference,
+    });
+  }
+
+  // fails if file doesn't exist
+  async readFileChunk(loc: FavaLocation_FS, filePath: string, options?: ReadChunkOptions): Promise<ReadFileResult> {
+    this.logger.verbose(`read:`, loc.id, filePath);
+    // fse.read()
+    throw new Error("Not implemented: read()");
+    // TODO
+  }
+
+  async readDir(loc: FavaLocation_FS, dirPath: string): Promise<DirInfo> {
     this.logger.verbose(`ls:`, loc.id, dirPath);
     const lsPath = join(loc.root, dirPath);
 
@@ -88,24 +106,6 @@ export class FsAdapter implements IFavaAdapter<FavaLocation_FS> {
       files: filesInfo,
     };
     return dirInfo;
-  }
-
-  async move(fromLoc: FavaLocation_FS, fromPath: string, toLoc: FavaLocation_FS, toPath: string, options?: MoveOptions): Promise<void> {
-    this.logger.verbose(`move:`, fromLoc.id, fromPath, toLoc.id, toPath);
-    const fullSrcPath = join(fromLoc.root, fromPath);
-    const fullDestPath = join(toLoc.root, toPath);
-    return fse.move(fullSrcPath, fullDestPath, {
-      overwrite: options?.overwrite ?? false,
-      // dereference,
-    });
-  }
-
-  // fails if file doesn't exist
-  async readBytes(loc: FavaLocation_FS, filePath: string, options?: ReadBytesOptions): Promise<ReadFileResult> {
-    this.logger.verbose(`read:`, loc.id, filePath);
-    // fse.read()
-    throw new Error("Not implemented: read()");
-    // TODO
   }
 
   async readFile(loc: FavaLocation_FS, filePath: string, options?: ReadFileOptions): Promise<ReadFileResult> {
@@ -135,8 +135,8 @@ export class FsAdapter implements IFavaAdapter<FavaLocation_FS> {
     const fullPath = join(loc.root, path);
     const stat = await fse.stat(fullPath);
 
-    const parsedPath = parse(fullPath);
-    const mimeType = mime.getType(path) ?? "";
+    const parsedPath = parse(path);
+    const mimeType = stat.isDirectory() ? "" : (mime.getType(path) ?? "");
 
     const fileInfo: FileInfo = {
       fullpath: backslashToForward(path),
@@ -158,16 +158,6 @@ export class FsAdapter implements IFavaAdapter<FavaLocation_FS> {
     return fileInfo;
   }
 
-  // fails if file doesn't exist
-  async writeBytes(loc: FavaLocation_FS, filePath: string, data: FileData, options?: WriteBytesOptions): Promise<WriteBytesResult> {
-    this.logger.verbose(`write:`, loc.id, filePath);
-    throw new Error("Not implemented: write()");
-    // TODO
-
-    // fse.write()
-    
-  }
-
   async writeFile(loc: FavaLocation_FS, filePath: string, data: FileData, options?: WriteFileOptions): Promise<void> {
     this.logger.verbose(`writeFile:`, loc.id, filePath);
     const path = join(loc.root, filePath);
@@ -177,6 +167,16 @@ export class FsAdapter implements IFavaAdapter<FavaLocation_FS> {
       // mode: options.mode,
       // signal: options.signal,
     });
+  }
+
+  // fails if file doesn't exist
+  async writeFileChunk(loc: FavaLocation_FS, filePath: string, data: FileData, options?: WriteChunkOptions): Promise<WriteChunkResult> {
+    this.logger.verbose(`writeFileChunk:`, loc.id, filePath);
+    throw new Error("Not implemented: write()");
+    // TODO
+
+    // fse.write()
+    
   }
 
 }

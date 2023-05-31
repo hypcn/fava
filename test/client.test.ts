@@ -136,13 +136,13 @@ describe("Fava client", () => {
     await fava.rename(testLocationOne.id, "file.txt", "file2.txt");
     expect(coreSpy.rename).toHaveBeenCalledTimes(2);
 
-    const writeRes = await favaClient.write(testLocationOne.id, "file.txt", { data: "data", mimeType: "text/plain" });
-    await fava.writeBytes(testLocationOne.id, "file.txt", "data");
-    expect(coreSpy.writeBytes).toHaveBeenCalledTimes(2);
-
     const writeFileRes = await favaClient.writeFile(testLocationOne.id, "file.txt", { data: "data", mimeType: "text/plain" });
     await fava.writeFile(testLocationOne.id, "file.txt", "data");
     expect(coreSpy.writeFile).toHaveBeenCalledTimes(2);
+
+    const writeRes = await favaClient.write(testLocationOne.id, "file.txt", { data: "data", mimeType: "text/plain" });
+    await fava.writeFileChunk(testLocationOne.id, "file.txt", "data");
+    expect(coreSpy.writeFileChunk).toHaveBeenCalledTimes(2);
 
     await fava.destroy();
 

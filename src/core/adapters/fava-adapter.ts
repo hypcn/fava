@@ -1,4 +1,4 @@
-import { CopyOptions, FileData, IFavaAdapter, MoveOptions, ReadBytesOptions, ReadFileOptions, ReadFileResult, WriteBytesOptions, WriteBytesResult, WriteFileOptions } from "./adapter.interface";
+import { CopyOptions, FileData, IFavaAdapter, MoveOptions, ReadChunkOptions, ReadFileOptions, ReadFileResult, WriteChunkOptions, WriteChunkResult, WriteFileOptions } from "./adapter.interface";
 // import * as fse from "fs-extra";
 import { Logger } from "@hypericon/axe";
 // import fetch from "node-fetch";
@@ -69,30 +69,30 @@ export class FavaAdapter implements IFavaAdapter<FavaLocation_Fava> {
     return result.exists;
   }
 
-  async ls(loc: FavaLocation_Fava, dirPath: string): Promise<DirInfo> {
-    const client = this.getClient(loc);
-    const result = await client.readDir(loc.remoteId, dirPath);
-    return result.dirInfo;
-  }
-
   async move(srcLoc: FavaLocation_Fava, srcPath: string, destLoc: FavaLocation_Fava, destPath: string, options?: MoveOptions): Promise<void> {
     const client = this.getClient(srcLoc);
     const result = await client.move(srcLoc.remoteId, srcPath, destLoc.remoteId, destPath, options);
     return;
   }
 
-  async readBytes(loc: FavaLocation_Fava, filePath: string, options?: ReadBytesOptions): Promise<ReadFileResult> {
-    throw new Error(`Not implemented`);
-    // const client = this.getClient(loc);
-    // // TODO
-    // const result = await client.readFilePart(loc.remoteId, filePath, options);
-    // return result;
+  async readDir(loc: FavaLocation_Fava, dirPath: string): Promise<DirInfo> {
+    const client = this.getClient(loc);
+    const result = await client.readDir(loc.remoteId, dirPath);
+    return result.dirInfo;
   }
 
   async readFile(loc: FavaLocation_Fava, filePath: string, options?: ReadFileOptions): Promise<ReadFileResult> {
     throw new Error(`Not implemented`);
     // const client = this.getClient(loc);
     // const result = await client.readFile(loc.remoteId, filePath, { });
+    // return result;
+  }
+
+  async readFileChunk(loc: FavaLocation_Fava, filePath: string, options?: ReadChunkOptions): Promise<ReadFileResult> {
+    throw new Error(`Not implemented`);
+    // const client = this.getClient(loc);
+    // // TODO
+    // const result = await client.readFilePart(loc.remoteId, filePath, options);
     // return result;
   }
 
@@ -114,19 +114,19 @@ export class FavaAdapter implements IFavaAdapter<FavaLocation_Fava> {
     return result.fileInfo;
   }
 
-  async writeBytes(loc: FavaLocation_Fava, filePath: string, data: FileData, options?: WriteBytesOptions): Promise<WriteBytesResult> {
-    throw new Error(`Not implemented`);
-    // const client = this.getClient(loc);
-    // // TODO
-    // const result = await client.write(loc.remoteId, filePath, data, options);
-    // return result;
-  }
-
   async writeFile(loc: FavaLocation_Fava, filePath: string, data: FileData, options?: WriteFileOptions): Promise<void> {
     throw new Error(`Not implemented`);
     // const client = this.getClient(loc);
     // const result = await client.writeFile(loc.remoteId, filePath, data); // options?
     // return;
+  }
+
+  async writeFileChunk(loc: FavaLocation_Fava, filePath: string, data: FileData, options?: WriteChunkOptions): Promise<WriteChunkResult> {
+    throw new Error(`Not implemented`);
+    // const client = this.getClient(loc);
+    // // TODO
+    // const result = await client.write(loc.remoteId, filePath, data, options);
+    // return result;
   }
 
 }
