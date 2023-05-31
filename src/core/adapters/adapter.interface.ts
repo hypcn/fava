@@ -17,7 +17,7 @@ export interface ReadFileOptions {
 }
 
 export interface ReadChunkOptions {
-  /**  */
+  /** When the data is a string, specify the encoding */
   encoding?: BufferEncoding,
   /** The buffer to write the data to */
   buffer?: Buffer,
