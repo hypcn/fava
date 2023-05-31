@@ -121,16 +121,18 @@ export class FsAdapter implements IFavaAdapter<FavaLocation_FS> {
     }
 
     // Set default options
-    const encoding = options?.encoding || 'utf8';
+    const encoding = options?.encoding;
     const position = options?.position || 0;
-    const length = options?.length || (await fs.promises.stat(fullPath)).size - position;
+    const length = options?.length || (await fse.stat(fullPath)).size - position;
 
     // Read the chunk from the file
     const buffer = options?.buffer ?? Buffer.alloc(length);
     const fd = await fse.open(fullPath, 'r');
     try {
       const { bytesRead } = await fse.read(fd, buffer, 0, length, position);
-      const data = encoding === 'buffer' ? buffer.slice(0, bytesRead) : buffer.toString(encoding, 0, bytesRead);
+      const data = encoding === undefined
+        ? buffer.subarray(0, bytesRead)
+        : buffer.toString(encoding, 0, bytesRead);
       return { bytesRead, data };
     } finally {
       await fse.close(fd);

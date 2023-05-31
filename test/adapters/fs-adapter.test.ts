@@ -234,36 +234,6 @@ describe("FS Adapter", () => {
 
   });
 
-  test("implements readFileChunk", async () => {
-    const adapter = new FsAdapter();
-
-    const filePath = join(testLocationRootOne, "file.txt");
-    const data = "This is a test file with some content.";
-
-    // Create and write a file
-    await adapter.writeFile(testLocationOne, "file.txt", data);
-    const fileData = await readFile(filePath, { encoding: "utf8" });
-    expect(fileData).toBe(data);
-
-    // Read a chunk from the existing file
-    const readChunk1 = await adapter.readFileChunk(testLocationOne, "file.txt", { position: 0, length: 4 });
-    expect(readChunk1.data).toBe("This");
-    expect(readChunk1.bytesRead).toBe(4);
-
-    // Read a chunk using a buffer
-    const readChunk2 = await adapter.readFileChunk(testLocationOne, "file.txt", { position: 5, length: 2, encoding: 'buffer' });
-    expect(readChunk2.data.toString()).toBe("is");
-    expect(readChunk2.bytesRead).toBe(2);
-
-    // Read a chunk with no specified length (should read to the end of the file)
-    const readChunk3 = await adapter.readFileChunk(testLocationOne, "file.txt", { position: 10 });
-    expect(readChunk3.data).toBe("test file with some content.");
-    expect(readChunk3.bytesRead).toBe(data.length - 10);
-
-    // Expect an error when the file doesn't exist
-    await expect(adapter.readFileChunk(testLocationOne, "nonexistent.txt", { position: 0, length: 4 })).rejects.toThrow("File not found: nonexistent.txt");
-  });
-
   test("implements readFile", async () => {
     const adapter = new FsAdapter();
 
@@ -278,6 +248,36 @@ describe("FS Adapter", () => {
 
     // Check if the file data is correct
     expect(fileData).toBe(data);
+  });
+
+  test("implements readFileChunk", async () => {
+    const adapter = new FsAdapter();
+
+    const filePath = join(testLocationRootOne, "file.txt");
+    const data = "This is a test file with some content.";
+
+    // Create and write a file
+    await adapter.writeFile(testLocationOne, "file.txt", data);
+    const fileData = await readFile(filePath, { encoding: "utf8" });
+    expect(fileData).toBe(data);
+
+    // Read a chunk from the existing file
+    const readChunk1 = await adapter.readFileChunk(testLocationOne, "file.txt", { position: 0, length: 4, encoding: "utf8" });
+    expect(readChunk1.data).toBe("This");
+    expect(readChunk1.bytesRead).toBe(4);
+
+    // Read a chunk using a buffer
+    const readChunk2 = await adapter.readFileChunk(testLocationOne, "file.txt", { position: 5, length: 2 });
+    expect(readChunk2.data.toString()).toBe("is");
+    expect(readChunk2.bytesRead).toBe(2);
+
+    // Read a chunk with no specified length (should read to the end of the file)
+    const readChunk3 = await adapter.readFileChunk(testLocationOne, "file.txt", { position: 10, encoding: "utf8" });
+    expect(readChunk3.data).toBe("test file with some content.");
+    expect(readChunk3.bytesRead).toBe(data.length - 10);
+
+    // Expect an error when the file doesn't exist
+    await expect(adapter.readFileChunk(testLocationOne, "nonexistent.txt", { position: 0, length: 4 })).rejects.toThrow("File not found: nonexistent.txt");
   });
 
   test("implements remove", async () => {

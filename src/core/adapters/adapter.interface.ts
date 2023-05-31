@@ -17,7 +17,8 @@ export interface ReadFileOptions {
 }
 
 export interface ReadChunkOptions {
-  encoding?: string,
+  /**  */
+  encoding?: BufferEncoding,
   /** The buffer to write the data to */
   buffer?: Buffer,
   /** The offset within the buffer to start writing at */
@@ -37,7 +38,7 @@ export interface ReadChunkResult {
 
 export interface WriteChunkOptions {
   /** When the data is a string, specify the encoding (default: "utf8") */
-  encoding?: string,
+  encoding?: BufferEncoding,
   // mode? integer?
   // filesystem flags? string?
   /** When the data is a buffer, specify the offset within the buffer to start writing from */
