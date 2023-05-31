@@ -6,6 +6,7 @@ import urljoin from "url-join";
 import { Fava, FavaLocation, GetLocationsResult, GetStatsResult, PathExistsResult, ReadDirResult, UpdateResult } from "../src";
 import { FsAdapter } from "../src/core/adapters/fs-adapter";
 import { FavaCore } from "../src/core/core";
+import { mockAndSpyOnAdapter } from "./test-utils";
 
 const testLogger: SimpleLogger = {
   error: (...mgs: any[]) => { /* noop */ },
@@ -35,24 +36,7 @@ let fava: Fava;
 
 const testFsAdapter = new FsAdapter();
 
-const testAdapterSpies = {
-  append: jest.spyOn(testFsAdapter, "append").mockImplementation(async () => undefined),
-  copy: jest.spyOn(testFsAdapter, "copy").mockImplementation(async () => undefined),
-  emptyDir: jest.spyOn(testFsAdapter, "emptyDir").mockImplementation(async () => undefined),
-  ensureFile: jest.spyOn(testFsAdapter, "ensureFile").mockImplementation(async () => undefined),
-  ensureDir: jest.spyOn(testFsAdapter, "ensureDir").mockImplementation(async () => undefined),
-  exists: jest.spyOn(testFsAdapter, "exists").mockImplementation(async () => (undefined as any)),
-  ls: jest.spyOn(testFsAdapter, "ls").mockImplementation(async () => (undefined as any)),
-  move: jest.spyOn(testFsAdapter, "move").mockImplementation(async () => undefined),
-  outputFile: jest.spyOn(testFsAdapter, "outputFile").mockImplementation(async () => undefined),
-  readBytes: jest.spyOn(testFsAdapter, "readBytes").mockImplementation(async () => (undefined as any)),
-  readFile: jest.spyOn(testFsAdapter, "readFile").mockImplementation(async () => (undefined as any)),
-  remove: jest.spyOn(testFsAdapter, "remove").mockImplementation(async () => undefined),
-  rename: jest.spyOn(testFsAdapter, "rename").mockImplementation(async () => undefined),
-  stat: jest.spyOn(testFsAdapter, "stat").mockImplementation(async () => (undefined as any)),
-  writeBytes: jest.spyOn(testFsAdapter, "writeBytes").mockImplementation(async () => (undefined as any)),
-  writeFile: jest.spyOn(testFsAdapter, "writeFile").mockImplementation(async () => undefined),
-};
+const testAdapterSpies = mockAndSpyOnAdapter(testFsAdapter);
 
 function baseUrl(): string {
   const port = 6131;
@@ -88,7 +72,7 @@ describe("HTTP API", () => {
 
     await fava.destroy();
     jest.clearAllMocks();
-    
+
     rmSync(testLocationRootOne, { force: true, recursive: true });
     rmSync(testLocationRootTwo, { force: true, recursive: true });
 
@@ -99,7 +83,7 @@ describe("HTTP API", () => {
 
     const response = await fetch(url);
     const result = (await response.json()) as GetLocationsResult;
-    
+
     expect(result.locations).toMatchObject(fava.getLocations());
   });
 

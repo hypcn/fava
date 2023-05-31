@@ -7,6 +7,7 @@ import { IFavaAdapter } from "../src/core/adapters/adapter.interface";
 import { FsAdapter } from "../src/core/adapters/fs-adapter";
 import { FavaCore } from "../src/core/core";
 import { FavaAdapter } from "../src/core/adapters/fava-adapter";
+import { mockAndSpyOnAdapter } from "./test-utils";
 
 const testLogger: SimpleLogger = {
   error: (...mgs: any[]) => { /* noop */ },
@@ -130,83 +131,62 @@ describe("Fava core", () => {
       locations,
     });
 
-    const adapterSpy_append = jest.spyOn(fsAdapter, "append").mockImplementation(async () => undefined);
-    const adapterSpy_copy = jest.spyOn(fsAdapter, "copy").mockImplementation(async () => undefined);
-    const adapterSpy_emptyDir = jest.spyOn(fsAdapter, "emptyDir").mockImplementation(async () => undefined);
-    const adapterSpy_ensureDir = jest.spyOn(fsAdapter, "ensureDir").mockImplementation(async () => undefined);
-    const adapterSpy_ensureFile = jest.spyOn(fsAdapter, "ensureFile").mockImplementation(async () => undefined);
-    const adapterSpy_exists = jest.spyOn(fsAdapter, "exists").mockImplementation(async () => (undefined as any));
-    const adapterSpy_ls = jest.spyOn(fsAdapter, "ls").mockImplementation(async () => (undefined as any));
-    const adapterSpy_move = jest.spyOn(fsAdapter, "move").mockImplementation(async () => undefined);
-    const adapterSpy_outputFile = jest.spyOn(fsAdapter, "outputFile").mockImplementation(async () => undefined);
-    const adapterSpy_readBytes = jest.spyOn(fsAdapter, "readBytes").mockImplementation(async () => (undefined as any));
-    const adapterSpy_readFile = jest.spyOn(fsAdapter, "readFile").mockImplementation(async () => (undefined as any));
-    const adapterSpy_remove = jest.spyOn(fsAdapter, "remove").mockImplementation(async () => undefined);
-    const adapterSpy_rename = jest.spyOn(fsAdapter, "rename").mockImplementation(async () => undefined);
-    const adapterSpy_stat = jest.spyOn(fsAdapter, "stat").mockImplementation(async () => (undefined as any));
-    const adapterSpy_writeBytes = jest.spyOn(fsAdapter, "writeBytes").mockImplementation(async () => (undefined as any));
-    const adapterSpy_writeFile = jest.spyOn(fsAdapter, "writeFile").mockImplementation(async () => undefined);
+    const adapterSpy = mockAndSpyOnAdapter(fsAdapter);
 
     await core.append(testLocationOne.id, "file.txt", "data");
-    expect(adapterSpy_append).toHaveBeenCalled();
+    expect(adapterSpy.append).toHaveBeenCalled();
 
     await core.copy(testLocationOne.id, "file.txt", testLocationTwo.id, "file.txt");
-    expect(adapterSpy_copy).toHaveBeenCalled();
+    expect(adapterSpy.copy).toHaveBeenCalled();
     // TODO: implement copying between location types
     expect(core.copy(testLocationOne.id, "file.txt", testLocationFava.id, "file.txt")).rejects.toThrow();
 
     await core.emptyDir(testLocationOne.id, "dir");
-    expect(adapterSpy_emptyDir).toHaveBeenCalled();
+    expect(adapterSpy.emptyDir).toHaveBeenCalled();
 
     await core.ensureDir(testLocationOne.id, "dir");
-    expect(adapterSpy_ensureDir).toHaveBeenCalled();
+    expect(adapterSpy.ensureDir).toHaveBeenCalled();
 
     await core.ensureFile(testLocationOne.id, "file.txt");
-    expect(adapterSpy_ensureFile).toHaveBeenCalled();
+    expect(adapterSpy.ensureFile).toHaveBeenCalled();
 
     await core.exists(testLocationOne.id, "file.txt");
-    expect(adapterSpy_exists).toHaveBeenCalled();
-
-    // await core.ls(testLocationOne.id, "dir");
-    // expect(adapterSpy_ls).toHaveBeenCalled();
-
-    // await core.mkdir(testLocationOne.id, "dir");
-    // expect(adapterSpy_ensureDir).toHaveBeenCalled();
+    expect(adapterSpy.exists).toHaveBeenCalled();
 
     await core.move(testLocationOne.id, "file.txt", testLocationTwo.id, "file.txt");
-    expect(adapterSpy_move).toHaveBeenCalled();
+    expect(adapterSpy.move).toHaveBeenCalled();
     // TODO: implement moving between location types
     expect(core.move(testLocationOne.id, "file.txt", testLocationFava.id, "file.txt")).rejects.toThrow();
 
     await core.outputFile(testLocationOne.id, "file.txt", "data");
-    expect(adapterSpy_outputFile).toHaveBeenCalled();
+    expect(adapterSpy.outputFile).toHaveBeenCalled();
 
     await core.readBytes(testLocationOne.id, "file.txt");
-    expect(adapterSpy_readBytes).toHaveBeenCalled();
+    expect(adapterSpy.readBytes).toHaveBeenCalled();
 
     await core.readDir(testLocationOne.id, "dir");
-    expect(adapterSpy_ls).toHaveBeenCalled();
+    expect(adapterSpy.ls).toHaveBeenCalled();
 
     await core.readFile(testLocationOne.id, "file.txt");
-    expect(adapterSpy_readFile).toHaveBeenCalled();
+    expect(adapterSpy.readFile).toHaveBeenCalled();
 
     await core.remove(testLocationOne.id, "file.txt");
-    expect(adapterSpy_remove).toHaveBeenCalled();
+    expect(adapterSpy.remove).toHaveBeenCalled();
 
     await core.rename(testLocationOne.id, "file.txt", "file2.txt");
-    expect(adapterSpy_rename).toHaveBeenCalled();
+    expect(adapterSpy.rename).toHaveBeenCalled();
 
     await core.stat(testLocationOne.id, "dir");
-    expect(adapterSpy_stat).toHaveBeenCalled();
+    expect(adapterSpy.stat).toHaveBeenCalled();
 
     await core.touch(testLocationOne.id, "file.txt");
-    expect(adapterSpy_ensureFile).toHaveBeenCalled();
+    expect(adapterSpy.ensureFile).toHaveBeenCalled();
 
     await core.writeBytes(testLocationOne.id, "file.txt", "data");
-    expect(adapterSpy_writeBytes).toHaveBeenCalled();
+    expect(adapterSpy.writeBytes).toHaveBeenCalled();
 
     await core.writeFile(testLocationOne.id, "file.txt", "data");
-    expect(adapterSpy_writeFile).toHaveBeenCalled();
+    expect(adapterSpy.writeFile).toHaveBeenCalled();
 
     jest.clearAllMocks();
 
