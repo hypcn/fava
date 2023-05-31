@@ -1,10 +1,10 @@
 import { Logger, SimpleLogger } from "@hypericon/axe";
-import { FsAdapter } from "../../src/core/adapters/fs-adapter";
+import { readFileSync } from "fs";
+import { ensureDir, ensureDirSync, pathExists, remove, rmSync } from "fs-extra";
+import { readFile, readdir, writeFile } from "fs/promises";
 import { join } from "path";
 import { FavaLocation } from "../../src";
-import { ensureDirSync, remove, rmSync } from "fs-extra";
-import { writeFile } from "fs/promises";
-import { readFileSync } from "fs";
+import { FsAdapter } from "../../src/core/adapters/fs-adapter";
 
 const testLogger: SimpleLogger = {
   error: (...mgs: any[]) => { /* noop */ },
@@ -61,28 +61,326 @@ describe("FS Adapter", () => {
     const adapter = new FsAdapter();
 
     const filePath = join(testLocationRootOne, "file.txt");
-    const data = "data\n";
-    await writeFile(filePath, "", { encoding: "utf8" });
+    const data1 = "data1\n";
+    const data2 = "data2\n";
 
-    await adapter.append(testLocationOne, "file.txt", data);
-    await adapter.append(testLocationOne, "file.txt", data);
+    // Create and write a file
+    await adapter.writeFile(testLocationOne, "file.txt", data1);
+    const fileData1 = await readFile(filePath, { encoding: "utf8" });
+    expect(fileData1).toBe(data1);
 
-    expect(readFileSync(filePath, { encoding: "utf8" })).toBe(data + data);
+    // Append data to the existing file
+    await adapter.append(testLocationOne, "file.txt", data2);
+    const fileData2 = await readFile(filePath, { encoding: "utf8" });
+    expect(fileData2).toBe(data1 + data2);
   });
 
   test("implements copy", async () => {
+    const adapter = new FsAdapter();
+
+    const srcFilePath = join(testLocationRootOne, "file.txt");
+    const srcDirPath = join(testLocationRootOne, "dir");
+    const destFilePath = join(testLocationRootTwo, "file.txt");
+    const destDirPath = join(testLocationRootTwo, "dir");
+    const data = "data\n";
+
+    // Create a file and a directory
+    await writeFile(srcFilePath, data, { encoding: "utf8" });
+    await ensureDir(srcDirPath);
+
+    // Copy a file
+    await adapter.copy(testLocationOne, "file.txt", testLocationTwo, "file.txt");
+    const fileData = await readFile(destFilePath, { encoding: "utf8" });
+    expect(fileData).toBe(data);
+
+    // Copy a directory
+    await adapter.copy(testLocationOne, "dir", testLocationTwo, "dir");
+    const dirExists = await pathExists(destDirPath);
+    expect(dirExists).toBe(true);
+
+    // Expect an error when the source doesn't exist
+    await expect(adapter.copy(testLocationOne, "nonexistent.txt", testLocationTwo, "nonexistent.txt")).rejects.toThrow();
+  });
+
+  test("implements emptyDir", async () => {
+    const adapter = new FsAdapter();
+
+    const dirPath = join(testLocationRootOne, "dir");
+    const filePath1 = join(dirPath, "file1.txt");
+    const filePath2 = join(dirPath, "file2.txt");
+    const data = "data\n";
+
+    // Create a directory with files
+    await ensureDir(dirPath);
+    await writeFile(filePath1, data, { encoding: "utf8" });
+    await writeFile(filePath2, data, { encoding: "utf8" });
+
+    // Empty the directory
+    await adapter.emptyDir(testLocationOne, "dir");
+
+    // Check if the directory is empty
+    const files = await readdir(dirPath);
+    expect(files.length).toBe(0);
+  });
+
+  test("implements ensureDir", async () => {
+    const adapter = new FsAdapter();
+
+    const dirPath = join(testLocationRootOne, "newDir");
+
+    // Remove the directory if it exists
+    await remove(dirPath);
+
+    // Ensure the directory exists
+    await adapter.ensureDir(testLocationOne, "newDir");
+
+    // Check if the directory exists
+    const dirExists = await pathExists(dirPath);
+    expect(dirExists).toBe(true);
+  });
+
+  test("implements ensureFile", async () => {
+    const adapter = new FsAdapter();
+
+    const filePath = join(testLocationRootOne, "newFile.txt");
+
+    // Remove the file if it exists
+    await remove(filePath);
+
+    // Ensure the file exists
+    await adapter.ensureFile(testLocationOne, "newFile.txt");
+
+    // Check if the file exists
+    const fileExists = await pathExists(filePath);
+    expect(fileExists).toBe(true);
+  });
+
+  test("implements exists", async () => {
+    const adapter = new FsAdapter();
+
+    const filePath = join(testLocationRootOne, "file.txt");
+    const dirPath = join(testLocationRootOne, "nonExistentDir");
+
+    // Create a file
+    await writeFile(filePath, "data", { encoding: "utf8" });
+
+    // Check if the file exists
+    const fileExists = await adapter.exists(testLocationOne, "file.txt");
+    expect(fileExists).toBe(true);
+
+    // Check if the non-existent directory exists
+    const dirExists = await adapter.exists(testLocationOne, "nonExistentDir");
+    expect(dirExists).toBe(false);
+  });
+
+  test("implements move", async () => {
     const adapter = new FsAdapter();
 
     const filePath1 = join(testLocationRootOne, "file.txt");
     const filePath2 = join(testLocationRootTwo, "file2.txt");
     const data = "data\n";
 
+    // Create a file and remove the destination file if it exists
     await writeFile(filePath1, data, { encoding: "utf8" });
     await remove(filePath2);
 
-    await adapter.copy(testLocationOne, "file.txt", testLocationTwo, "file2.txt");
+    // Move the file
+    await adapter.move(testLocationOne, "file.txt", testLocationTwo, "file2.txt");
 
-    expect(readFileSync(filePath2, { encoding: "utf8" })).toBe(data);
+    // Check if the source file no longer exists and the destination file exists
+    const sourceExists = await pathExists(filePath1);
+    const destinationExists = await pathExists(filePath2);
+    expect(sourceExists).toBe(false);
+    expect(destinationExists).toBe(true);
+  });
+
+  test("implements readDir", async () => {
+    const adapter = new FsAdapter();
+
+    const dirPath = join(testLocationRootOne, "dir");
+    const filePath1 = join(dirPath, "file1.txt");
+    const filePath2 = join(dirPath, "file2");
+    const data = "data\n";
+
+    // Create a directory with files
+    await ensureDir(dirPath);
+    await writeFile(filePath1, data, { encoding: "utf8" });
+    await writeFile(filePath2, data, { encoding: "utf8" });
+
+    // Read the directory
+    const dirInfo = await adapter.readDir(testLocationOne, "dir");
+
+    // Check the directory information
+    expect(dirInfo.dir.fullpath).toBe("dir");
+    expect(dirInfo.dir.dirpath).toBe("");
+    expect(dirInfo.dir.isDir).toBe(true);
+
+    // Check the files information
+    expect(dirInfo.files.length).toBe(2);
+
+    dirInfo.files.forEach((file) => {
+      expect(file.dirpath).toBe("dir");
+      expect(file.isDir).toBe(false);
+      expect(["file1.txt", "file2"].includes(file.filename)).toBe(true);
+
+      if (file.filename === "file1.txt") {
+        expect(file.basename).toBe("file1");
+        expect(file.ext).toBe(".txt");
+      } else if (file.filename === "file2") {
+        expect(file.basename).toBe("file2");
+        expect(file.ext).toBe("");
+      }
+    });
+
+  });
+
+  test("implements readBytes", async () => {
+    const adapter = new FsAdapter();
+
+    // TODO
+
+  });
+
+  test("implements readFile", async () => {
+    const adapter = new FsAdapter();
+
+    const filePath = join(testLocationRootOne, "file.txt");
+    const data = "data\n";
+
+    // Create a file
+    await writeFile(filePath, data, { encoding: "utf8" });
+
+    // Read the file
+    const fileData = await adapter.readFile(testLocationOne, "file.txt", { encoding: "utf8" });
+
+    // Check if the file data is correct
+    expect(fileData).toBe(data);
+  });
+
+  test("implements remove", async () => {
+    const adapter = new FsAdapter();
+
+    const filePath = join(testLocationRootOne, "file.txt");
+    const dirPath = join(testLocationRootOne, "dir");
+    const data = "data\n";
+
+    // Create a file and a directory
+    await writeFile(filePath, data, { encoding: "utf8" });
+    await ensureDir(dirPath);
+
+    // Remove the file and the directory
+    await adapter.remove(testLocationOne, "file.txt");
+    await adapter.remove(testLocationOne, "dir");
+
+    // Check if the file and the directory no longer exist
+    const fileExists = await pathExists(filePath);
+    const dirExists = await pathExists(dirPath);
+    expect(fileExists).toBe(false);
+    expect(dirExists).toBe(false);
+  });
+
+  test("implements rename", async () => {
+    const adapter = new FsAdapter();
+
+    const filePath1 = join(testLocationRootOne, "file.txt");
+    const filePath2 = join(testLocationRootOne, "file2.txt");
+    const dirPath1 = join(testLocationRootOne, "dir");
+    const dirPath2 = join(testLocationRootOne, "dir2");
+    const data = "data\n";
+
+    // Create a file and a directory
+    await writeFile(filePath1, data, { encoding: "utf8" });
+    await ensureDir(dirPath1);
+
+    // Rename the file and the directory
+    await adapter.rename(testLocationOne, "file.txt", "file2.txt");
+    await adapter.rename(testLocationOne, "dir", "dir2");
+
+    // Check if the original file and directory no longer exist, and the renamed ones exist
+    const fileExists1 = await pathExists(filePath1);
+    const fileExists2 = await pathExists(filePath2);
+    const dirExists1 = await pathExists(dirPath1);
+    const dirExists2 = await pathExists(dirPath2);
+    expect(fileExists1).toBe(false);
+    expect(fileExists2).toBe(true);
+    expect(dirExists1).toBe(false);
+    expect(dirExists2).toBe(true);
+  });
+
+  test("implements stat", async () => {
+    const adapter = new FsAdapter();
+
+    const filePath = join(testLocationRootOne, "file.txt");
+    const dirPath = join(testLocationRootOne, "dir");
+    const data = "data\n";
+
+    // Create a file and a directory
+    await writeFile(filePath, data, { encoding: "utf8" });
+    await ensureDir(dirPath);
+
+    // Stat the file and the directory
+    const fileInfo = await adapter.stat(testLocationOne, "file.txt");
+    const dirInfo = await adapter.stat(testLocationOne, "dir");
+
+    // Check the file information
+    expect(fileInfo.fullpath).toBe("file.txt");
+    expect(fileInfo.dirpath).toBe("");
+    expect(fileInfo.filename).toBe("file.txt");
+    expect(fileInfo.basename).toBe("file");
+    expect(fileInfo.ext).toBe(".txt");
+    expect(fileInfo.mimeType).toBe("text/plain");
+    expect(fileInfo.isDir).toBe(false);
+    expect(fileInfo.size).toBe(data.length);
+    expect(typeof fileInfo.created).toBe("number");
+    expect(typeof fileInfo.modified).toBe("number");
+    expect(typeof fileInfo.changed).toBe("number");
+    expect(typeof fileInfo.accessed).toBe("number");
+
+    // Check the directory information
+    expect(dirInfo.fullpath).toBe("dir");
+    expect(dirInfo.dirpath).toBe("");
+    expect(dirInfo.filename).toBe("dir");
+    expect(dirInfo.basename).toBe("dir");
+    expect(dirInfo.ext).toBe("");
+    expect(dirInfo.mimeType).toBe("");
+    expect(dirInfo.isDir).toBe(true);
+    expect(dirInfo.size).toBe(0);
+    expect(typeof dirInfo.created).toBe("number");
+    expect(typeof dirInfo.modified).toBe("number");
+    expect(typeof dirInfo.changed).toBe("number");
+    expect(typeof dirInfo.accessed).toBe("number");
+  });
+
+  test("implements writeFile", async () => {
+    const adapter = new FsAdapter();
+
+    const filePath1 = join(testLocationRootOne, "file.txt");
+    const filePath2 = join(testLocationRootOne, "dir", "file2.txt");
+    const data1 = "data1\n";
+    const data2 = "data2\n";
+    const data3 = "data3\n";
+
+    // Create and write a file
+    await adapter.writeFile(testLocationOne, "file.txt", data1);
+    const fileData1 = await readFile(filePath1, { encoding: "utf8" });
+    expect(fileData1).toBe(data1);
+
+    // Replace an existing file
+    await adapter.writeFile(testLocationOne, "file.txt", data2);
+    const fileData2 = await readFile(filePath1, { encoding: "utf8" });
+    expect(fileData2).toBe(data2);
+
+    // Ensure parent directories and write a file
+    await adapter.writeFile(testLocationOne, "dir/file2.txt", data3);
+    const fileData3 = await readFile(filePath2, { encoding: "utf8" });
+    expect(fileData3).toBe(data3);
+  });
+
+  test("implements writeBytes", async () => {
+    const adapter = new FsAdapter();
+
+    // TODO
+
   });
 
 });
