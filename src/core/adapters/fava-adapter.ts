@@ -81,13 +81,6 @@ export class FavaAdapter implements IFavaAdapter<FavaLocation_Fava> {
     return;
   }
 
-  // async outputFile(loc: FavaLocation_Fava, filePath: string, data: FileData, options?: WriteFileOptions): Promise<void> {
-  //   throw new Error(`Not implemented`);
-  //   // const client = this.getClient(loc);
-  //   // const result = await client.writeFile(loc.remoteId, filePath, data); // options?
-  //   // return;
-  // }
-
   async readBytes(loc: FavaLocation_Fava, filePath: string, options?: ReadBytesOptions): Promise<ReadFileResult> {
     throw new Error(`Not implemented`);
     // const client = this.getClient(loc);

@@ -63,8 +63,6 @@ export interface IFavaAdapter<T extends FavaLocation> {
 
   copy(srcLoc: T, srcPath: string, destLoc: T, destPath: string, options?: CopyOptions): Promise<void>;
 
-  // dir(loc: T, dirPath: string): Promise<DirInfo>;
-
   emptyDir(loc: T, dirPath: string): Promise<void>;
 
   ensureDir(loc: T, dirPath: string): Promise<void>;
@@ -73,17 +71,11 @@ export interface IFavaAdapter<T extends FavaLocation> {
 
   exists(loc: T, path: string): Promise<boolean>;
 
-  ls(loc: T, dirPath: string): Promise<DirInfo>;
-
-  // mkdir(loc: T, dirPath: string): Promise<void>;
+  ls(loc: T, dirPath: string): Promise<DirInfo>
 
   move(srcLoc: T, srcPath: string, destLoc: T, destPath: string, options?: MoveOptions): Promise<void>;
 
-  // outputFile(loc: T, filePath: string, data: FileData, options?: WriteFileOptions): Promise<void>;
-
   readBytes(loc: T, filePath: string, options?: ReadBytesOptions): Promise<ReadFileResult>;
-
-  // readDir(loc: T, dirPath: string): Promise<DirInfo>;
 
   readFile(loc: T, filePath: string, options?: ReadFileOptions): Promise<ReadFileResult>;
 
@@ -110,4 +102,5 @@ export interface IFavaAdapter<T extends FavaLocation> {
    * @param options 
    */
   writeFile(loc: T, filePath: string, data: FileData, options?: WriteFileOptions): Promise<void>;
+
 }

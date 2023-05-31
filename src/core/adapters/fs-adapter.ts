@@ -10,6 +10,12 @@ export class FsAdapter implements IFavaAdapter<FavaLocation_FS> {
 
   private logger = new Logger("FS Adapter");
 
+  constructor(options?: {
+    logger?: Logger,
+  }) {
+    if (options?.logger) this.logger = options.logger;
+  }
+
   getType(): "FS" {
     return "FS";
   }
@@ -93,19 +99,6 @@ export class FsAdapter implements IFavaAdapter<FavaLocation_FS> {
       // dereference,
     });
   }
-
-  // async outputFile(loc: FavaLocation_FS, filePath: string, data: FileData, options?: WriteFileOptions): Promise<void> {
-  //   this.logger.verbose(`outputFile:`, loc.id, filePath);
-  //   const fullFilePath = join(loc.root, filePath);
-  //   // const fullDirPath = dirname(fullFilePath);
-  //   // await fse.ensureDir(fullDirPath);
-  //   return fse.outputFile(fullFilePath, data, {
-  //     encoding: options?.encoding,
-  //     // flag: options.flag,
-  //     // mode: options.mode,
-  //     // signal: options.signal,
-  //   });
-  // }
 
   // fails if file doesn't exist
   async readBytes(loc: FavaLocation_FS, filePath: string, options?: ReadBytesOptions): Promise<ReadFileResult> {

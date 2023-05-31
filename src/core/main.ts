@@ -368,9 +368,6 @@ export class Fava {
   async move(srcLocId: string, srcPath: string, destLocId: string, destPath: string, options?: MoveOptions) {
     return this.core.move(srcLocId, srcPath, destLocId, destPath, options);
   }
-  // async outputFile(locId: string, filePath: string, data: FileData, options?: WriteFileOptions) {
-  //   return this.core.outputFile(locId, filePath, data, options);
-  // }
   async readBytes(locId: string, filePath: string, options?: ReadBytesOptions) {
     return this.core.readBytes(locId, filePath, options);
   }

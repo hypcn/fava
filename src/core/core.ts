@@ -137,13 +137,6 @@ export class FavaCore {
     }
   }
 
-  // async outputFile(locId: string, filePath: string, data: FileData, options?: WriteFileOptions) {
-  //   this.logger.debug(`outputFile`, locId, filePath, data, options);
-  //   const loc = this.findLocation(locId);
-  //   const adapter = this.getAdapter(loc);
-  //   return adapter.outputFile(loc, filePath, data, options);
-  // }
-
   async rename(locId: string, oldPath: string, newPath: string) {
     this.logger.debug(`rename`, locId, oldPath, newPath);
     const loc = this.findLocation(locId);
