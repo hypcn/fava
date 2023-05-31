@@ -158,9 +158,6 @@ describe("Fava core", () => {
     // TODO: implement moving between location types
     expect(core.move(testLocationOne.id, "file.txt", testLocationFava.id, "file.txt")).rejects.toThrow();
 
-    // await core.outputFile(testLocationOne.id, "file.txt", "data");
-    // expect(adapterSpy.outputFile).toHaveBeenCalled();
-
     await core.readBytes(testLocationOne.id, "file.txt");
     expect(adapterSpy.readBytes).toHaveBeenCalled();
 

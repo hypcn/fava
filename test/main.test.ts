@@ -199,9 +199,6 @@ describe("Fava", () => {
     await fava.move(testLocationOne.id, "file.txt", testLocationTwo.id, "dir/file.txt");
     expect(coreSpy.move).toHaveBeenCalled();
 
-    // await fava.outputFile(testLocationOne.id, "file.txt", "data");
-    // expect(coreSpy.outputFile).toHaveBeenCalled();
-
     await fava.readBytes(testLocationOne.id, "file.txt", { length: 1, position: 1 });
     expect(coreSpy.readBytes).toHaveBeenCalled();
 
