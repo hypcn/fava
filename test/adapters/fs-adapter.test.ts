@@ -234,7 +234,7 @@ describe("FS Adapter", () => {
 
   });
 
-  test("implements readBytes", async () => {
+  test("implements readFileChunk", async () => {
     const adapter = new FsAdapter();
 
     // TODO
@@ -376,11 +376,32 @@ describe("FS Adapter", () => {
     expect(fileData3).toBe(data3);
   });
 
-  test("implements writeBytes", async () => {
+  test("implements writeFileChunk", async () => {
     const adapter = new FsAdapter();
 
-    // TODO
+    const filePath = join(testLocationRootOne, "file.txt");
+    const data1 = "This is the first part. ";
+    const data2 = "This is the second part.";
+    const combinedData = data1 + data2;
 
+    // Create and write a file
+    await adapter.writeFile(testLocationOne, "file.txt", data1);
+    const fileData1 = await readFile(filePath, { encoding: "utf8" });
+    expect(fileData1).toBe(data1);
+
+    // Write a chunk to the existing file
+    await adapter.writeFileChunk(testLocationOne, "file.txt", data2, { position: data1.length });
+    const fileData2 = await readFile(filePath, { encoding: "utf8" });
+    expect(fileData2).toBe(combinedData);
+
+    // Write a chunk using a buffer
+    const bufferData = Buffer.from(" using a buffer.");
+    await adapter.writeFileChunk(testLocationOne, "file.txt", bufferData, { position: combinedData.length });
+    const fileData3 = await readFile(filePath, { encoding: "utf8" });
+    expect(fileData3).toBe(combinedData + bufferData.toString());
+
+    // Expect an error when the file doesn't exist
+    await expect(adapter.writeFileChunk(testLocationOne, "nonexistent.txt", data2, { position: 0 })).rejects.toThrow("File not found: nonexistent.txt");
   });
 
 });
