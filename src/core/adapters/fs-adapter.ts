@@ -94,18 +94,18 @@ export class FsAdapter implements IFavaAdapter<FavaLocation_FS> {
     });
   }
 
-  async outputFile(loc: FavaLocation_FS, filePath: string, data: FileData, options?: WriteFileOptions): Promise<void> {
-    this.logger.verbose(`outputFile:`, loc.id, filePath);
-    const fullFilePath = join(loc.root, filePath);
-    // const fullDirPath = dirname(fullFilePath);
-    // await fse.ensureDir(fullDirPath);
-    return fse.outputFile(fullFilePath, data, {
-      encoding: options?.encoding,
-      // flag: options.flag,
-      // mode: options.mode,
-      // signal: options.signal,
-    });
-  }
+  // async outputFile(loc: FavaLocation_FS, filePath: string, data: FileData, options?: WriteFileOptions): Promise<void> {
+  //   this.logger.verbose(`outputFile:`, loc.id, filePath);
+  //   const fullFilePath = join(loc.root, filePath);
+  //   // const fullDirPath = dirname(fullFilePath);
+  //   // await fse.ensureDir(fullDirPath);
+  //   return fse.outputFile(fullFilePath, data, {
+  //     encoding: options?.encoding,
+  //     // flag: options.flag,
+  //     // mode: options.mode,
+  //     // signal: options.signal,
+  //   });
+  // }
 
   // fails if file doesn't exist
   async readBytes(loc: FavaLocation_FS, filePath: string, options?: ReadBytesOptions): Promise<ReadFileResult> {
@@ -178,7 +178,7 @@ export class FsAdapter implements IFavaAdapter<FavaLocation_FS> {
   async writeFile(loc: FavaLocation_FS, filePath: string, data: FileData, options?: WriteFileOptions): Promise<void> {
     this.logger.verbose(`writeFile:`, loc.id, filePath);
     const path = join(loc.root, filePath);
-    return fse.writeFile(path, data, {
+    return fse.outputFile(path, data, {
       encoding: options?.encoding,
       // flag: options.flag,
       // mode: options.mode,

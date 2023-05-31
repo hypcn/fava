@@ -65,7 +65,7 @@ export class FavaAdapter implements IFavaAdapter<FavaLocation_Fava> {
 
   async exists(loc: FavaLocation_Fava, path: string): Promise<boolean> {
     const client = this.getClient(loc);
-    const result = await client.pathExists(loc.remoteId, path);
+    const result = await client.exists(loc.remoteId, path);
     return result.exists;
   }
 
@@ -81,12 +81,12 @@ export class FavaAdapter implements IFavaAdapter<FavaLocation_Fava> {
     return;
   }
 
-  async outputFile(loc: FavaLocation_Fava, filePath: string, data: FileData, options?: WriteFileOptions): Promise<void> {
-    throw new Error(`Not implemented`);
-    // const client = this.getClient(loc);
-    // const result = await client.writeFile(loc.remoteId, filePath, data); // options?
-    // return;
-  }
+  // async outputFile(loc: FavaLocation_Fava, filePath: string, data: FileData, options?: WriteFileOptions): Promise<void> {
+  //   throw new Error(`Not implemented`);
+  //   // const client = this.getClient(loc);
+  //   // const result = await client.writeFile(loc.remoteId, filePath, data); // options?
+  //   // return;
+  // }
 
   async readBytes(loc: FavaLocation_Fava, filePath: string, options?: ReadBytesOptions): Promise<ReadFileResult> {
     throw new Error(`Not implemented`);
@@ -117,7 +117,7 @@ export class FavaAdapter implements IFavaAdapter<FavaLocation_Fava> {
 
   async stat(loc: FavaLocation_Fava, path: string) {
     const client = this.getClient(loc);
-    const result = await client.getStats(loc.remoteId, path);
+    const result = await client.stats(loc.remoteId, path);
     return result.fileInfo;
   }
 

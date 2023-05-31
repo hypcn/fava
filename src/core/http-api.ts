@@ -183,7 +183,7 @@ export function configureHttpApi(app: Express, core: FavaCore, options: {
     else {
       logger.debug(`PUT: write:`, locationId, path);
       logger.debug(`PUT: write body:`, body);
-      await core.outputFile(locationId, path, body, {});
+      await core.writeFile(locationId, path, body, {});
       const result: UpdateResult = {
         update: "write",
         done: true,

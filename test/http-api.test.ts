@@ -234,9 +234,9 @@ describe("HTTP API", () => {
     });
     const httpResult = (await response.json()) as UpdateResult;
 
-    const apiResult = await fava.outputFile(locationId, filePath, data);
+    const apiResult = await fava.writeFile(locationId, filePath, data);
 
-    expect(testAdapterSpies.outputFile).toHaveBeenCalledTimes(2);
+    expect(testAdapterSpies.writeFile).toHaveBeenCalledTimes(2);
   });
 
   test("PATCH - append", async () => {

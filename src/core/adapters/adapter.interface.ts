@@ -79,7 +79,7 @@ export interface IFavaAdapter<T extends FavaLocation> {
 
   move(srcLoc: T, srcPath: string, destLoc: T, destPath: string, options?: MoveOptions): Promise<void>;
 
-  outputFile(loc: T, filePath: string, data: FileData, options?: WriteFileOptions): Promise<void>;
+  // outputFile(loc: T, filePath: string, data: FileData, options?: WriteFileOptions): Promise<void>;
 
   readBytes(loc: T, filePath: string, options?: ReadBytesOptions): Promise<ReadFileResult>;
 
@@ -103,7 +103,7 @@ export interface IFavaAdapter<T extends FavaLocation> {
   writeBytes(loc: T, filePath: string, data: FileData, options?: WriteBytesOptions): Promise<WriteBytesResult>;
 
   /**
-   * Write data to a file, replacing it if it already existed
+   * Write data to a file, ensuring the directory path, and replacing the file if it already existed
    * @param loc 
    * @param filePath 
    * @param data 
