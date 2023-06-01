@@ -121,9 +121,10 @@ export class FsAdapter implements IFavaAdapter<FavaLocation_FS> {
     }
 
     // Set default options
+    const fileSize = (await fse.stat(fullPath)).size;
     const encoding = options?.encoding;
     const position = options?.position || 0;
-    const length = options?.length || (await fse.stat(fullPath)).size - position;
+    const length = options?.length || fileSize - position;
 
     // Read the chunk from the file
     const buffer = options?.buffer ?? Buffer.alloc(length);
@@ -133,7 +134,14 @@ export class FsAdapter implements IFavaAdapter<FavaLocation_FS> {
       const data = encoding === undefined
         ? buffer.subarray(0, bytesRead)
         : buffer.toString(encoding, 0, bytesRead);
-      return { bytesRead, data };
+      return {
+        data,
+        bytesRead,
+        chunkStart: position,
+        chunkEnd: position + bytesRead - 1,
+        fileSize,
+        mimeType: mime.getType(filePath) ?? "",
+      };
     } finally {
       await fse.close(fd);
     }

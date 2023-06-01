@@ -109,7 +109,7 @@ export class FavaAdapter implements IFavaAdapter<FavaLocation_Fava> {
     const client = this.getClient(loc);
     const result = await client.readFileChunk(loc.remoteId, filePath, {
       // mimeType: options.,
-      range
+      range: 
     });
     return result;
   }

@@ -153,7 +153,7 @@ Server config example:
     return result;
   }
 
-  async readFile(locationId: string, path: string, returnType?: "text" | "buffer"): Promise<string | ArrayBuffer> {
+  async readFile(locationId: string, path: string, returnAs?: "text" | "buffer"): Promise<string | ArrayBuffer> {
 
     const url = urlJoin(this.apiPrefix, `/${locationId}/${path}`);
 
@@ -164,8 +164,8 @@ Server config example:
       }
     });
 
-    if (returnType === "buffer") return response.arrayBuffer();
-    if (returnType === "text") return response.text();
+    if (returnAs === "buffer") return response.arrayBuffer();
+    if (returnAs === "text") return response.text();
 
     const contentType = response.headers.get("Content-Type") ?? "";
     const lookslikeText = contentType.startsWith("text") || [
@@ -179,8 +179,39 @@ Server config example:
     }
   }
 
-  async readFileChunk(locationId: string, path: string, opts?: { range?: any, mimeType?: string }): Promise<string | Uint8Array> {
+  async readFileChunk(locationId: string, path: string, opts?: {
+    /** The range start in bytes */
+    rangeStart?: number,
+    /** The range end in bytes - requires the range start to be defined */
+    rangeEnd?: number,
+    /** Read the specified number of bytes fromt he end of the file */
+    suffixLength?: number,
+    returnAs?: "text" | "buffer",
+  }): Promise<string | Uint8Array> {
     // read       - GET     locId/path            "Range" header
+
+    const url = urlJoin(this.apiPrefix, `/${locationId}/${path}`);
+
+    const headers: { [key: string]: string } = {};
+    headers["Accept"] = "*/*";
+
+    if (opts?.rangeStart !== undefined) {
+      const rangeStart = opts.rangeStart.toString();
+      const rangeEnd = (opts.rangeEnd !== undefined) ? opts.rangeEnd.toString() : "";
+      headers["Range"] = `bytes=${rangeStart}-${rangeEnd}`;
+    } else if (opts?.suffixLength !== undefined) {
+      const suffixLength = opts.suffixLength.toString();
+      headers["Range"] = `bytes=-${suffixLength}`;
+    } else {
+      headers["Range"] = `bytes=0-`;
+    }
+
+    const response = await this._fetch(url, {
+      method: "GET",
+      headers,
+    });
+
+    
 
     throw new Error("Not implemented");
 

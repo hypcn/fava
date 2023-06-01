@@ -1,5 +1,5 @@
 import { SimpleLogger } from "@hypericon/axe";
-import { Express, Request } from "express";
+import { Express, Request, Response } from "express";
 import asyncHandler from "express-async-handler";
 import { ApiGetLocationsResult, ApiGetStatsResult, ApiPathExistsResult, ApiReadDirResult, ApiUpdateResult } from "../shared";
 import { FavaCore } from "./core";
@@ -66,36 +66,41 @@ export class HttpApi {
       const locationId = req.params.locationId ?? "";
       const path = req.params["0"] || "/";
 
-      const isReadDir = req.query.readDir !== undefined;
-      const isStats = req.query.stats !== undefined;
-      const isExists = req.query.exists !== undefined;
-
-      // TODO: Range header
-
-      if (isReadDir) {
+      if (hasQuery(req, "readDir")) {
         this.logger.debug(`GET: readDir:`, locationId, path);
         const dirInfo = await this.core.readDir(locationId, path);
         const result: ApiReadDirResult = { dirInfo };
         res.json(result);
       }
 
-      else if (isStats) {
+      else if (hasQuery(req, "stats")) {
         this.logger.debug(`GET: stats:`, locationId, path);
         const fileInfo = await this.core.stat(locationId, path);
         const result: ApiGetStatsResult = { fileInfo };
         res.json(result);
       }
 
-      else if (isExists) {
+      else if (hasQuery(req, "exists")) {
         this.logger.debug(`GET: exists:`, locationId, path);
         const exists = await this.core.exists(locationId, path);
         const result: ApiPathExistsResult = { exists };
         res.json(result);
       }
 
+      else if (hasHeader(req, "range")) {
+        const parsedRange = parseRange(req.headers.range);
+        if (parsedRange === undefined) {
+          res.status(501).send("Only a single range of bytes is supported.");
+        } else {
+          await this.readFileChunk(locationId, path, parsedRange, res);
+        }
+      }
+
       else {
-        this.logger.debug(`GET: read:`, locationId, path);
+        this.logger.debug(`GET: readFile:`, locationId, path);
         const file = await this.core.readFile(locationId, path);
+        // TODO: set Content-Type
+
         res.send(file);
       }
 
@@ -207,6 +212,29 @@ export class HttpApi {
 
   }
 
+  async readFileChunk(locationId: string, path: string, parsedRange: ParsedRange, res: Response) {
+
+    this.logger.debug(`GET: readFileChunk:`, locationId, path, `range: ${parsedRange.start ?? ""} -> ${parsedRange.end ?? ""}`);
+
+    const readChunkResult = await this.core.readFileChunk(locationId, path, {
+      position: parsedRange.start,
+      length: (parsedRange.start && parsedRange.end) ? parsedRange.end - parsedRange.start : undefined,
+    });
+
+    const isComplete = (readChunkResult.bytesRead === readChunkResult.fileSize);
+    if (isComplete) {
+      res.status(200); // OK
+      res.setHeader("Content-Range", `bytes */${readChunkResult.fileSize}`);
+    } else {
+      res.status(206); // Partial Content
+      res.setHeader("Content-Range", `bytes ${readChunkResult.chunkStart}-${readChunkResult.chunkEnd}/${readChunkResult.fileSize}`);
+    }
+
+    if (readChunkResult.mimeType) res.type(readChunkResult.mimeType);
+    res.send(readChunkResult.data);
+
+  }
+
 }
 
 /**
@@ -217,6 +245,10 @@ export class HttpApi {
  */
 function hasQuery(req: Request, query: string): boolean {
   return Boolean(req.query[query] !== undefined);
+}
+
+function hasHeader(req: Request, header: string): boolean {
+  return Boolean(req.headers[header] !== undefined);
 }
 
 function locIdAndPathFromQuery(req: Request, queryName: string) {
@@ -232,4 +264,42 @@ function locIdAndPathFromQuery(req: Request, queryName: string) {
     path: path ?? "",
   };
 
+}
+
+type ParsedRange = {
+  units: string,
+  start: number | undefined,
+  end: number | undefined,
+};
+
+/**
+ * Parse the given "range" header value to a single range,
+ * or `undefined` if invalid value or multiple ranges are defined
+ * @param rangeHeader 
+ * @returns 
+ */
+function parseRange(rangeHeader: string | undefined): ParsedRange | undefined {
+  if (!rangeHeader) return undefined;
+
+  const [units, rangesStr] = rangeHeader.split("=");
+  if (!units || !rangesStr) return undefined;
+
+  const rangeStrs = rangesStr.split(",").map(r => r.trim()).filter(r => Boolean(r));
+  if (rangeStrs.length !== 1) return undefined;
+
+  const rangeStr = rangeStrs[0];
+  const [startStr, endStr] = rangeStr.split("-").map(r => r.trim());
+
+  let start = startStr === "" ? undefined : parseInt(startStr);
+  let end = endStr === "" ? undefined : parseInt(endStr);
+  if (Number.isNaN(start)) start = undefined;
+  if (Number.isNaN(end)) end = undefined;
+  if (start === undefined && end === undefined) return undefined;
+
+  const range: ParsedRange = {
+    units,
+    start,
+    end,
+  };
+  return range;
 }

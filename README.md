@@ -72,12 +72,13 @@ Run tests:
 Core
 
 - server WS API
-- server serve web page (different endpoints, API is default)
+- server serves web page (at "/", api is at "/api")
 - define auth requirements
   - implement them
   - unauthenticated should *not* be the default
 - ? file preview thumbnails?
 - streams to manage large files, and moving between locations
+- cache headers, etag, etc.
 
 client library
 
@@ -104,3 +105,5 @@ Out of scope (at least for the time being):
 - WebDAV? - https://www.npmjs.com/package/webdav
 - S3
 - B2 (S3?)
+- google drive
+- onedrive

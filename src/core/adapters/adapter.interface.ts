@@ -23,17 +23,26 @@ export interface ReadChunkOptions {
   buffer?: Buffer,
   /** The offset within the buffer to start writing at */
   offset?: number,
-  /** The number of bytes to read */
-  length?: number,
   /** The position in the file to start reading at */
   position?: number,
+  /** The number of bytes to read */
+  length?: number,
 }
 
 export type ReadFileResult = Buffer | string;
 
 export interface ReadChunkResult {
   data: string | Buffer,
+  /** The number of bytes read */
   bytesRead: number,
+  /** The start of the range, 0-indexed, inclusive */
+  chunkStart: number,
+  /** The end of the range, 0-indexed, inclusive */
+  chunkEnd: number,
+  /** The total size of the file */
+  fileSize: number,
+  /** May be empty for unknown types */
+  mimeType: string,
 }
 
 export interface WriteChunkOptions {
