@@ -182,6 +182,7 @@ export class HttpApi {
         this.logger.debug(`PATCH: writeFileChunk:`, locationId, path);
         const chunk = await this.core.writeFileChunk(locationId, path, body, {
           // range?
+          // TODO
         });
         const result: ApiWriteChunkResult = { bytesWritten: chunk.bytesWritten };
         res.json(result);
