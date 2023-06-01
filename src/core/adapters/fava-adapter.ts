@@ -2,6 +2,7 @@ import { CopyOptions, FileData, IFavaAdapter, MoveOptions, ReadChunkOptions, Rea
 import { Logger } from "@hypericon/axe";
 import { FavaClient } from "../../client";
 import { DirInfo, FavaLocation_Fava } from "../../shared";
+import { arrayBufferToBuffer } from "../utils";
 
 export class FavaAdapter implements IFavaAdapter<FavaLocation_Fava> {
 
@@ -98,14 +99,17 @@ export class FavaAdapter implements IFavaAdapter<FavaLocation_Fava> {
   async readFile(loc: FavaLocation_Fava, filePath: string, options?: ReadFileOptions): Promise<ReadFileResult> {
     this.logger.debug(`readFile:`, loc.id, filePath, options);
     const client = this.getClient(loc);
-    const result = await client.readFile(loc.remoteId, filePath, { });
-    return result;
+    const result = await client.readFile(loc.remoteId, filePath, options?.encoding !== undefined ? "text" : "buffer");
+    return arrayBufferToBuffer(result);
   }
 
   async readFileChunk(loc: FavaLocation_Fava, filePath: string, options?: ReadChunkOptions): Promise<ReadChunkResult> {
     this.logger.debug(`readFileChunk:`, loc.id, filePath, options);
     const client = this.getClient(loc);
-    const result = await client.readFileChunk(loc.remoteId, filePath, options);
+    const result = await client.readFileChunk(loc.remoteId, filePath, {
+      // mimeType: options.,
+      range
+    });
     return result;
   }
 

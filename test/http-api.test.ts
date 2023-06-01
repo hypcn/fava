@@ -3,7 +3,7 @@ import { ensureDirSync, rmSync } from "fs-extra";
 import fetch from "node-fetch";
 import { join } from "path";
 import urljoin from "url-join";
-import { Fava, FavaLocation, GetLocationsResult, GetStatsResult, PathExistsResult, ReadDirResult, UpdateResult } from "../src";
+import { Fava, FavaLocation, ApiGetLocationsResult, ApiGetStatsResult, ApiPathExistsResult, ApiReadDirResult, ApiUpdateResult } from "../src";
 import { FsAdapter } from "../src/core/adapters/fs-adapter";
 import { FavaCore } from "../src/core/core";
 import { mockAndSpyOnAdapter } from "./test-utils";
@@ -82,7 +82,7 @@ describe("HTTP API", () => {
     const url = urljoin(baseUrl(), "locations");
 
     const response = await fetch(url);
-    const result = (await response.json()) as GetLocationsResult;
+    const result = (await response.json()) as ApiGetLocationsResult;
 
     expect(result.locations).toMatchObject(fava.getLocations());
   });
@@ -93,7 +93,7 @@ describe("HTTP API", () => {
     const url = urljoin(baseUrl(), locationId, path, "?readDir");
 
     const response = await fetch(url);
-    const httpResult = (await response.json()) as ReadDirResult;
+    const httpResult = (await response.json()) as ApiReadDirResult;
 
     const apiResult = await fava.readDir(locationId, path);
 
@@ -107,7 +107,7 @@ describe("HTTP API", () => {
     const url = urljoin(baseUrl(), locationId, path, "?stats");
 
     const response = await fetch(url);
-    const httpResult = (await response.json()) as GetStatsResult;
+    const httpResult = (await response.json()) as ApiGetStatsResult;
 
     const apiResult = await fava.stat(locationId, path);
 
@@ -121,7 +121,7 @@ describe("HTTP API", () => {
     const url = urljoin(baseUrl(), locationId, path, "?exists");
 
     const response = await fetch(url);
-    const httpResult = (await response.json()) as PathExistsResult;
+    const httpResult = (await response.json()) as ApiPathExistsResult;
 
     const apiResult = await fava.exists(locationId, path);
 
@@ -153,7 +153,7 @@ describe("HTTP API", () => {
     const url = urljoin(baseUrl(), toLocId, toPath, `?copyFrom=${fromLocId}/${fromPath}`);
 
     const response = await fetch(url, { method: "PUT" });
-    const httpResult = (await response.json()) as UpdateResult;
+    const httpResult = (await response.json()) as ApiUpdateResult;
 
     const apiResult = await fava.copy(fromLocId, fromPath, toLocId, toPath);
 
@@ -167,7 +167,7 @@ describe("HTTP API", () => {
     const url = urljoin(baseUrl(), locationId, dirPath, `?ensureDir`);
 
     const response = await fetch(url, { method: "PUT" });
-    const httpResult = (await response.json()) as UpdateResult;
+    const httpResult = (await response.json()) as ApiUpdateResult;
 
     const apiResult = await fava.ensureDir(locationId, dirPath);
 
@@ -181,7 +181,7 @@ describe("HTTP API", () => {
     const url = urljoin(baseUrl(), locationId, filePath, `?ensureFile`);
 
     const response = await fetch(url, { method: "PUT" });
-    const httpResult = (await response.json()) as UpdateResult;
+    const httpResult = (await response.json()) as ApiUpdateResult;
 
     const apiResult = await fava.ensureFile(locationId, filePath);
 
@@ -198,7 +198,7 @@ describe("HTTP API", () => {
     const url = urljoin(baseUrl(), toLocId, toPath, `?moveFrom=${fromLocId}/${fromPath}`);
 
     const response = await fetch(url, { method: "PUT" });
-    const httpResult = (await response.json()) as UpdateResult;
+    const httpResult = (await response.json()) as ApiUpdateResult;
 
     const apiResult = await fava.move(fromLocId, fromPath, toLocId, toPath);
 
@@ -213,7 +213,7 @@ describe("HTTP API", () => {
     const url = urljoin(baseUrl(), locationId, toPath, `?renameFrom=${fromPath}`);
 
     const response = await fetch(url, { method: "PUT" });
-    const httpResult = (await response.json()) as UpdateResult;
+    const httpResult = (await response.json()) as ApiUpdateResult;
 
     const apiResult = await fava.rename(locationId, fromPath, toPath);
 
@@ -232,7 +232,7 @@ describe("HTTP API", () => {
       headers: {},
       body: data,
     });
-    const httpResult = (await response.json()) as UpdateResult;
+    const httpResult = (await response.json()) as ApiUpdateResult;
 
     const apiResult = await fava.writeFile(locationId, filePath, data);
 
@@ -251,7 +251,7 @@ describe("HTTP API", () => {
       headers: {},
       body: data,
     });
-    const httpResult = (await response.json()) as UpdateResult;
+    const httpResult = (await response.json()) as ApiUpdateResult;
 
     const apiResult = await fava.append(locationId, filePath, data);
 
@@ -270,7 +270,7 @@ describe("HTTP API", () => {
       headers: {},
       body: data,
     });
-    const httpResult = (await response.json()) as UpdateResult;
+    const httpResult = (await response.json()) as ApiUpdateResult;
 
     const apiResult = await fava.writeFileChunk(locationId, filePath, data);
 
@@ -284,7 +284,7 @@ describe("HTTP API", () => {
     const url = urljoin(baseUrl(), locationId, dirPath, "?emptyDir");
 
     const response = await fetch(url, { method: "DELETE" });
-    const httpResult = (await response.json()) as UpdateResult;
+    const httpResult = (await response.json()) as ApiUpdateResult;
 
     const apiResult = await fava.emptyDir(locationId, dirPath);
 
@@ -298,7 +298,7 @@ describe("HTTP API", () => {
     const url = urljoin(baseUrl(), locationId, filePath);
 
     const response = await fetch(url, { method: "DELETE" });
-    const httpResult = (await response.json()) as UpdateResult;
+    const httpResult = (await response.json()) as ApiUpdateResult;
 
     const apiResult = await fava.remove(locationId, filePath);
 

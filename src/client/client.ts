@@ -1,5 +1,5 @@
 import urlJoin from "url-join";
-import { GetLocationsResult, GetStatsResult, PathExistsResult, ReadDirResult, UpdateResult } from "../shared";
+import { ApiGetLocationsResult, ApiGetStatsResult, ApiPathExistsResult, ApiReadDirResult, ApiUpdateResult } from "../shared";
 import { FavaClientOptions } from "./client-options.interface";
 import fetch from "node-fetch";
 
@@ -34,19 +34,19 @@ export class FavaClient {
 
   }
 
-  async getLocations(): Promise<GetLocationsResult> {
+  async getLocations(): Promise<ApiGetLocationsResult> {
 
     const url = urlJoin(this.apiPrefix, `/locations`);
 
     const response = await this._fetch(url, {
       method: "GET",
     });
-    const result = await response.json() as GetLocationsResult;
+    const result = await response.json() as ApiGetLocationsResult;
 
     return result;
   }
 
-  async append(locationId: string, path: string, data: FileData, opts?: { mimeType?: string }): Promise<UpdateResult> {
+  async append(locationId: string, path: string, data: FileData, opts?: { mimeType?: string }): Promise<ApiUpdateResult> {
 
     const url = urlJoin(this.apiPrefix, `/${locationId}/${path}?append`);
 
@@ -58,12 +58,12 @@ export class FavaClient {
       headers,
       body: data,
     });
-    const result = await response.json() as UpdateResult;
+    const result = await response.json() as ApiUpdateResult;
 
     return result;
   }
 
-  async copy(fromLocId: string, fromPath: string, toLocId: string, toPath: string, opts?: { overwrite?: boolean }): Promise<UpdateResult> {
+  async copy(fromLocId: string, fromPath: string, toLocId: string, toPath: string, opts?: { overwrite?: boolean }): Promise<ApiUpdateResult> {
 
     const overwrite = opts?.overwrite ? `&overwrite` : "";
     const url = urlJoin(this.apiPrefix, `/${toLocId}/${toPath}?copyFrom=${fromLocId}/${fromPath}${overwrite}`);
@@ -71,60 +71,60 @@ export class FavaClient {
     const response = await this._fetch(url, {
       method: "PUT",
     });
-    const result = await response.json() as UpdateResult;
+    const result = await response.json() as ApiUpdateResult;
 
     return result;
   }
 
-  async emptyDir(locationId: string, path: string): Promise<UpdateResult> {
+  async emptyDir(locationId: string, path: string): Promise<ApiUpdateResult> {
 
     const url = urlJoin(this.apiPrefix, `/${locationId}/${path}?emptyDir`);
 
     const response = await this._fetch(url, {
       method: "DELETE",
     });
-    const result = await response.json() as UpdateResult;
+    const result = await response.json() as ApiUpdateResult;
 
     return result;
   }
 
-  async ensureDir(locationId: string, path: string): Promise<UpdateResult> {
+  async ensureDir(locationId: string, path: string): Promise<ApiUpdateResult> {
 
     const url = urlJoin(this.apiPrefix, `/${locationId}/${path}?ensureDir`);
 
     const response = await this._fetch(url, {
       method: "PUT",
     });
-    const result = await response.json() as UpdateResult;
+    const result = await response.json() as ApiUpdateResult;
 
     return result;
   }
 
-  async ensureFile(locationId: string, path: string): Promise<UpdateResult> {
+  async ensureFile(locationId: string, path: string): Promise<ApiUpdateResult> {
 
     const url = urlJoin(this.apiPrefix, `/${locationId}/${path}?ensureFile`);
 
     const response = await this._fetch(url, {
       method: "PUT",
     });
-    const result = await response.json() as UpdateResult;
+    const result = await response.json() as ApiUpdateResult;
 
     return result;
   }
 
-  async exists(locationId: string, path: string): Promise<PathExistsResult> {
+  async exists(locationId: string, path: string): Promise<ApiPathExistsResult> {
     
     const url = urlJoin(this.apiPrefix, `/${locationId}/${path}?exists`);
 
     const response = await this._fetch(url, {
       method: "GET",
     });
-    const result = await response.json() as PathExistsResult;
+    const result = await response.json() as ApiPathExistsResult;
 
     return result;
   }
 
-  async move(fromLocId: string, fromPath: string, toLocId: string, toPath: string, opts?: { overwrite?: boolean }): Promise<UpdateResult> {
+  async move(fromLocId: string, fromPath: string, toLocId: string, toPath: string, opts?: { overwrite?: boolean }): Promise<ApiUpdateResult> {
 
     const overwrite = opts?.overwrite ? `&overwrite` : "";
     const url = urlJoin(this.apiPrefix, `/${toLocId}/${toPath}?moveFrom=${fromLocId}/${fromPath}${overwrite}`);
@@ -132,19 +132,19 @@ export class FavaClient {
     const response = await this._fetch(url, {
       method: "PUT",
     });
-    const result = await response.json() as UpdateResult;
+    const result = await response.json() as ApiUpdateResult;
 
     return result;
   }
 
-  async readDir(locationId: string, path: string): Promise<ReadDirResult> {
+  async readDir(locationId: string, path: string): Promise<ApiReadDirResult> {
 
     const url = urlJoin(this.apiPrefix, `/${locationId}/${path}?readDir`);
 
     const response = await this._fetch(url, {
       method: "GET",
     });
-    const result = await response.json() as ReadDirResult;
+    const result = await response.json() as ApiReadDirResult;
 
     return result;
   }
@@ -155,6 +155,9 @@ export class FavaClient {
 
     const response = await this._fetch(url, {
       method: "GET",
+      headers: {
+        "Accept": "*/*",
+      }
     });
 
     if (returnType === "buffer") return response.arrayBuffer();
@@ -179,43 +182,43 @@ export class FavaClient {
 
   }
 
-  async remove(locationId: string, path: string): Promise<UpdateResult> {
+  async remove(locationId: string, path: string): Promise<ApiUpdateResult> {
 
     const url = urlJoin(this.apiPrefix, `/${locationId}/${path}`);
 
     const response = await this._fetch(url, {
       method: "DELETE",
     });
-    const result = await response.json() as UpdateResult;
+    const result = await response.json() as ApiUpdateResult;
 
     return result;
   }
   
-  async rename(locationId: string, fromPath: string, toPath: string): Promise<UpdateResult> {
+  async rename(locationId: string, fromPath: string, toPath: string): Promise<ApiUpdateResult> {
 
     const url = urlJoin(this.apiPrefix, `/${locationId}/${toPath}?renameFrom=${fromPath}`);
 
     const response = await this._fetch(url, {
       method: "PUT",
     });
-    const result = await response.json() as UpdateResult;
+    const result = await response.json() as ApiUpdateResult;
 
     return result;
   }
 
-  async stats(locationId: string, path: string): Promise<GetStatsResult> {
+  async stats(locationId: string, path: string): Promise<ApiGetStatsResult> {
 
     const url = urlJoin(this.apiPrefix, `/${locationId}/${path}?stats`);
 
     const response = await this._fetch(url, {
       method: "GET",
     });
-    const result = await response.json() as GetStatsResult;
+    const result = await response.json() as ApiGetStatsResult;
 
     return result;
   }
 
-  async writeFile(locationId: string, path: string, data: FileData, opts?: { mimeType?: string }): Promise<UpdateResult> {
+  async writeFile(locationId: string, path: string, data: FileData, opts?: { mimeType?: string }): Promise<ApiUpdateResult> {
 
     const url = urlJoin(this.apiPrefix, `/${locationId}/${path}`);
 
@@ -227,12 +230,12 @@ export class FavaClient {
       headers,
       body: data,
     });
-    const result = await response.json() as UpdateResult;
+    const result = await response.json() as ApiUpdateResult;
 
     return result;
   }
 
-  async writeFileChunk(locationId: string, path: string, data: FileData, opts?: { range?: any, mimeType?: string }): Promise<UpdateResult> {
+  async writeFileChunk(locationId: string, path: string, data: FileData, opts?: { range?: any, mimeType?: string }): Promise<ApiUpdateResult> {
 
     const url = urlJoin(this.apiPrefix, `/${locationId}/${path}`);
 
@@ -245,7 +248,7 @@ export class FavaClient {
       headers,
       body: data,
     });
-    const result = await response.json() as UpdateResult;
+    const result = await response.json() as ApiUpdateResult;
 
     return result;
   }

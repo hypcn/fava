@@ -1,15 +1,17 @@
-import { Logger, SimpleLogger } from "@hypericon/axe";
-import { Express, Request, Response } from "express";
+import { SimpleLogger } from "@hypericon/axe";
+import { Express, Request } from "express";
 import asyncHandler from "express-async-handler";
-import { GetLocationsResult, GetStatsResult, PathExistsResult, ReadDirResult, UpdateResult } from "../shared";
+import { ApiGetLocationsResult, ApiGetStatsResult, ApiPathExistsResult, ApiReadDirResult, ApiUpdateResult } from "../shared";
 import { FavaCore } from "./core";
+
+// ----- Location operations:
 
 // GET locations
 
-// The defined operations:
+// ----- File operations:
 
 // readFile   - GET     locId/path
-// read       - GET     locId/path            "Range" header
+// readChunk  - GET     locId/path            "Range" header
 // ls         - GET     locId/path?readDir
 // dir        - GET     locId/path?readDir
 // readDir    - GET     locId/path?readDir
@@ -24,239 +26,200 @@ import { FavaCore } from "./core";
 // writeFile  - PUT     locId/path                        file in the body
 
 // append     - PATCH   locId/path?append       data in body
-// write      - PATCH   locId/path              data in body; range in "Range" header
+// writeChunk - PATCH   locId/path              data in body; range in "Range" header
 
 // emptyDir   - DELETE  locId/path?emptyDir
 // remove     - DELETE  locId/path
 
-function putFlags(req: Request) {
-  return {
-    moveFrom: Boolean(req.query.moveFrom !== undefined),
-    copyFrom: Boolean(req.query.copyFrom !== undefined),
-    renameFrom: Boolean(req.query.renameFrom !== undefined),
-    ensureDir: Boolean(req.query.ensureDir !== undefined),
-    ensureFile: Boolean(req.query.ensureFile !== undefined),
+export class HttpApi {
 
-    overwrite: Boolean(req.query.overwrite !== undefined),
-  };
-}
+  core: FavaCore;
+  logger: SimpleLogger;
+  routePrefix: string;
 
-export function configureHttpApi(app: Express, core: FavaCore, options: {
-  logger: SimpleLogger,
-  routePrefix: string,
-}) {
+  constructor(settings: {
+    core: FavaCore,
+    routePrefix: string,
+    logger: SimpleLogger,
+  }) {
+    this.core = settings.core;
+    this.routePrefix = settings.routePrefix;
+    this.logger = settings.logger;
+  }
 
-  const {
-    logger,
-    routePrefix,
-  } = options;
+  addApiToApp(app: Express) {
 
-  const locationsRoute = routePrefix + "/locations";
+    const locationsRoute = this.routePrefix + "/locations";
 
-  app.get(locationsRoute, asyncHandler(async (req, res, next) => {
-    logger.debug(`GET locations`);
-    const response: GetLocationsResult = {
-      locations: core.locations,
-    };
-    res.json(response);
-  }));
-
-  const apiRoute = routePrefix + "/:locationId/*";
-
-  app.get(apiRoute, asyncHandler(async (req, res, next) => {
-
-    const locationId = req.params.locationId ?? "";
-    const path = req.params["0"] || "/";
-
-    const isReadDir = req.query.readDir !== undefined;
-    const isStats = req.query.stats !== undefined;
-    const isExists = req.query.exists !== undefined;
-
-    // TODO: Range header
-
-    if (isReadDir) {
-      logger.debug(`GET: readDir:`, locationId, path);
-      const dirInfo = await core.readDir(locationId, path);
-      const result: ReadDirResult = {
-        dirInfo,
+    app.get(locationsRoute, asyncHandler(async (req, res, next) => {
+      this.logger.debug(`GET locations`);
+      const response: ApiGetLocationsResult = {
+        locations: this.core.locations,
       };
-      res.json(result);
-    }
-    
-    else if (isStats) {
-      logger.debug(`GET: stats:`, locationId, path);
-      const fileInfo = await core.stat(locationId, path);
-      const result: GetStatsResult = {
-        fileInfo,
-      };
-      res.json(result);
-    }
-    
-    else if (isExists) {
-      logger.debug(`GET: exists:`, locationId, path);
-      const exists = await core.exists(locationId, path);
-      const result: PathExistsResult = {
-        exists,
-      };
-      res.json(result);
-    }
-    
-    else {
-      logger.debug(`GET: read:`, locationId, path);
-      const file = await core.readFile(locationId, path);
-      res.send(file);
-    }
+      res.json(response);
+    }));
 
-    // printTestMess(route, req, res);
+    const apiRoute = this.routePrefix + "/:locationId/*";
 
-  }));
+    app.get(apiRoute, asyncHandler(async (req, res, next) => {
 
-  app.put(apiRoute, asyncHandler(async (req, res, next) => {
+      const locationId = req.params.locationId ?? "";
+      const path = req.params["0"] || "/";
 
-    const locationId = req.params.locationId ?? "";
-    const path = req.params["0"] || "/";
-    const body = req.body;
+      const isReadDir = req.query.readDir !== undefined;
+      const isStats = req.query.stats !== undefined;
+      const isExists = req.query.exists !== undefined;
 
-    const isMoveFrom = Boolean(req.query.moveFrom !== undefined);
-    const isCopyFrom = Boolean(req.query.copyFrom !== undefined);
-    const isRenameFrom = Boolean(req.query.renameFrom !== undefined);
-    const isEnsureDir = Boolean(req.query.ensureDir !== undefined);
-    const isEnsureFile = Boolean(req.query.ensureFile !== undefined);
-    const isOverwrite = Boolean(req.query.overwrite !== undefined);
+      // TODO: Range header
 
-    if (isMoveFrom) {
-      const from = queryLocIdAndPath(req, "moveFrom");
-      logger.debug(`PUT: move:`, from.locId, from.path, "->", locationId, path);
-      await core.move(from.locId, from.path, locationId, path, { overwrite: isOverwrite });
-      const result: UpdateResult = {
-        update: "move",
-        done: true,
-      };
-      res.json(result);
-    }
-    
-    else if (isCopyFrom) {
-      const from = queryLocIdAndPath(req, "copyFrom");
-      logger.debug(`PUT: copy:`, from.locId, from.path, "->", locationId, path);
-      await core.copy(from.locId, from.path, locationId, path, { overwrite: isOverwrite });
-      const result: UpdateResult = {
-        update: "copy",
-        done: true,
-      };
-      res.json(result);
-    }
-    
-    else if (isRenameFrom) {
-      const from = req.query.renameFrom;
-      if (!from || typeof from !== "string") {
-        throw new Error(`Rename source must be a path`);
+      if (isReadDir) {
+        this.logger.debug(`GET: readDir:`, locationId, path);
+        const dirInfo = await this.core.readDir(locationId, path);
+        const result: ApiReadDirResult = { dirInfo };
+        res.json(result);
       }
-      logger.debug(`PUT: rename:`, locationId, from, "->", locationId, path);
-      await core.rename(locationId, from, path);
-      const result: UpdateResult = {
-        update: "rename",
-        done: true,
-      };
-      res.json(result);
-    }
-    
-    else if (isEnsureDir) {
-      logger.debug(`PUT: ensureDir:`, locationId, path);
-      await core.ensureDir(locationId, path);
-      const result: UpdateResult = {
-        update: "ensureDir",
-        done: true,
-      };
-      res.json(result);
-    }
-    
-    else if (isEnsureFile) {
-      logger.debug(`PUT: ensureFile:`, locationId, path);
-      await core.ensureFile(locationId, path);
-      const result: UpdateResult = {
-        update: "ensureFile",
-        done: true,
-      };
-      res.json(result);
-    }
-    
-    else {
-      logger.debug(`PUT: write:`, locationId, path);
-      logger.debug(`PUT: write body:`, body);
-      await core.writeFile(locationId, path, body, {});
-      const result: UpdateResult = {
-        update: "write",
-        done: true,
-      };
-      res.json(result);
-    }
 
-  }));
+      else if (isStats) {
+        this.logger.debug(`GET: stats:`, locationId, path);
+        const fileInfo = await this.core.stat(locationId, path);
+        const result: ApiGetStatsResult = { fileInfo };
+        res.json(result);
+      }
 
-  app.patch(apiRoute, asyncHandler(async (req, res, next) => {
+      else if (isExists) {
+        this.logger.debug(`GET: exists:`, locationId, path);
+        const exists = await this.core.exists(locationId, path);
+        const result: ApiPathExistsResult = { exists };
+        res.json(result);
+      }
 
-    const locationId = req.params.locationId ?? "";
-    const path = req.params["0"] || "/";
-    const body = req.body;
+      else {
+        this.logger.debug(`GET: read:`, locationId, path);
+        const file = await this.core.readFile(locationId, path);
+        res.send(file);
+      }
 
-    const isAppend = Boolean(req.query.append !== undefined);
+    }));
 
-    if (isAppend) {
-      logger.debug(`PATCH: append:`, locationId, path);
-      await core.append(locationId, path, body, {});
-      const result: UpdateResult = {
-        update: "append",
-        done: true,
-      };
-      res.json(result);
-    }
+    app.put(apiRoute, asyncHandler(async (req, res, next) => {
 
-    else {
-      logger.debug(`PATCH: write:`, locationId, path);
-      await core.writeFileChunk(locationId, path, body, {
-        // range?
-      });
-      const result: UpdateResult = {
-        update: "write",
-        done: true,
-      };
-      res.json(result);
-    }
+      const locationId = req.params.locationId ?? "";
+      const path = req.params["0"] || "/";
+      const body = req.body;
 
-  }));
+      const isOverwrite = hasQuery(req, "overwrite");
 
-  app.delete(apiRoute, asyncHandler(async (req, res, next) => {
+      if (hasQuery(req, "moveFrom")) {
+        const from = locIdAndPathFromQuery(req, "moveFrom");
+        this.logger.debug(`PUT: move:`, from.locId, from.path, "->", locationId, path);
+        await this.core.move(from.locId, from.path, locationId, path, { overwrite: isOverwrite });
+        const result: ApiUpdateResult = { update: "move", done: true };
+        res.json(result);
+      }
 
-    const locationId = req.params.locationId ?? "";
-    const path = req.params["0"] || "/";
+      else if (hasQuery(req, "copyFrom")) {
+        const from = locIdAndPathFromQuery(req, "copyFrom");
+        this.logger.debug(`PUT: copy:`, from.locId, from.path, "->", locationId, path);
+        await this.core.copy(from.locId, from.path, locationId, path, { overwrite: isOverwrite });
+        const result: ApiUpdateResult = { update: "copy", done: true };
+        res.json(result);
+      }
 
-    const isEmptyDir = req.query.emptyDir !== undefined;
+      else if (hasQuery(req, "renameFrom")) {
+        const from = req.query.renameFrom;
+        if (!from || typeof from !== "string") {
+          throw new Error(`Rename source must be a path`);
+        }
+        this.logger.debug(`PUT: rename:`, locationId, from, "->", locationId, path);
+        await this.core.rename(locationId, from, path);
+        const result: ApiUpdateResult = { update: "rename", done: true };
+        res.json(result);
+      }
 
-    if (isEmptyDir) {
-      logger.debug(`DELETE: emptyDir:`, locationId, path);
-      await core.emptyDir(locationId, path);
-      const result: UpdateResult = {
-        update: "emptyDir",
-        done: true,
-      };
-      res.json(result);
-    }
+      else if (hasQuery(req, "ensureDir")) {
+        this.logger.debug(`PUT: ensureDir:`, locationId, path);
+        await this.core.ensureDir(locationId, path);
+        const result: ApiUpdateResult = { update: "ensureDir", done: true };
+        res.json(result);
+      }
 
-    else {
-      logger.debug(`DELETE: remove:`, locationId, path);
-      await core.remove(locationId, path);
-      const result: UpdateResult = {
-        update: "remove",
-        done: true,
-      };
-      res.json(result);
-    }
+      else if (hasQuery(req, "ensureFile")) {
+        this.logger.debug(`PUT: ensureFile:`, locationId, path);
+        await this.core.ensureFile(locationId, path);
+        const result: ApiUpdateResult = { update: "ensureFile", done: true };
+        res.json(result);
+      }
 
-  }));
+      else {
+        this.logger.debug(`PUT: writeFile:`, locationId, path);
+        this.logger.debug(`PUT: writeFile body:`, body);
+        await this.core.writeFile(locationId, path, body, {});
+        const result: ApiUpdateResult = { update: "writeFile", done: true };
+        res.json(result);
+      }
+
+    }));
+
+    app.patch(apiRoute, asyncHandler(async (req, res, next) => {
+
+      const locationId = req.params.locationId ?? "";
+      const path = req.params["0"] || "/";
+      const body = req.body;
+
+      if (hasQuery(req, "append")) {
+        this.logger.debug(`PATCH: append:`, locationId, path);
+        await this.core.append(locationId, path, body, {});
+        const result: ApiUpdateResult = { update: "append", done: true };
+        res.json(result);
+      }
+
+      else {
+        this.logger.debug(`PATCH: writeFileChunk:`, locationId, path);
+        await this.core.writeFileChunk(locationId, path, body, {
+          // range?
+        });
+        const result: ApiUpdateResult = { update: "writeFileChunk", done: true };
+        res.json(result);
+      }
+
+    }));
+
+    app.delete(apiRoute, asyncHandler(async (req, res, next) => {
+
+      const locationId = req.params.locationId ?? "";
+      const path = req.params["0"] || "/";
+
+      if (hasQuery(req, "emptyDir")) {
+        this.logger.debug(`DELETE: emptyDir:`, locationId, path);
+        await this.core.emptyDir(locationId, path);
+        const result: ApiUpdateResult = { update: "emptyDir", done: true };
+        res.json(result);
+      }
+
+      else {
+        this.logger.debug(`DELETE: remove:`, locationId, path);
+        await this.core.remove(locationId, path);
+        const result: ApiUpdateResult = { update: "remove", done: true };
+        res.json(result);
+      }
+
+    }));
+
+  }
 
 }
 
-function queryLocIdAndPath(req: Request, queryName: string) {
+/**
+ * Find whether the given query parameter is present at all
+ * @param req 
+ * @param query 
+ * @returns 
+ */
+function hasQuery(req: Request, query: string): boolean {
+  return Boolean(req.query[query] !== undefined);
+}
+
+function locIdAndPathFromQuery(req: Request, queryName: string) {
 
   const queryValue = req.query[queryName];
   if (!queryValue || typeof queryValue !== "string") {
@@ -269,38 +232,4 @@ function queryLocIdAndPath(req: Request, queryName: string) {
     path: path ?? "",
   };
 
-}
-
-function printTestMess(route: string, req: Request, res: Response) {
-
-  // req.body
-  // req.headers
-  req.originalUrl
-  req.path
-  req.url
-  res.json({
-    route,
-    locationIdParam: req.params.locationId,
-    reqMethod: req.method,
-    reqOriginalUrl: req.originalUrl,
-    reqPath: req.path,
-    reqUrl: req.url,
-    // reqRoute: req.route,
-    // driveList,
-    params: req.params,
-    query: req.query,
-  });
-
-}
-
-// curl "http://localhost:6131/api/C:/somewhere/else/file.ext?something&one=two"
-const testResponse = {
-  "route": "/api/:locationId/*",
-  "locationIdParam": "C:",
-  "reqMethod": "GET",
-  "reqOriginalUrl": "/api/C:/somewhere/else/file.ext?something&one=two",
-  "reqPath": "/api/C:/somewhere/else/file.ext",
-  "reqUrl": "/api/C:/somewhere/else/file.ext?something&one=two",
-  "params": { "0": "somewhere/else/file.ext", "locationId": "C:" },
-  "query": { "something": "", "one": "two" }
 }

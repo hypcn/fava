@@ -11,7 +11,7 @@ import { CopyOptions, FileData, MoveOptions, ReadChunkOptions, ReadFileOptions, 
 import { FavaAdapter } from "./adapters/fava-adapter";
 import { FsAdapter } from "./adapters/fs-adapter";
 import { FavaCore } from "./core";
-import { configureHttpApi } from "./http-api";
+import { HttpApi } from "./http-api";
 import { FavaConfig, FavaInterfaceInfo } from "./interfaces";
 import { configureErrorHandler, configureMiddleware } from "./middleware";
 import { configureWebUi } from "./web-ui";
@@ -162,10 +162,16 @@ export class Fava {
     this.server.on("request", this.app);
 
     if (config.http) {
-      configureHttpApi(this.app, this.core, {
-        logger: new Logger("HTTP"),
+      const httpApi = new HttpApi({
+        core: this.core,
         routePrefix: this.httpApiPrefix,
+        logger: new Logger("HTTP"),
       });
+      httpApi.addApiToApp(this.app);
+      // configureHttpApi(this.app, this.core, {
+      //   logger: new Logger("HTTP"),
+      //   routePrefix: this.httpApiPrefix,
+      // });
       this.logger.log(`Configured HTTP API`);
     }
 
