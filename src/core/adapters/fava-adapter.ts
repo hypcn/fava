@@ -2,7 +2,7 @@ import { CopyOptions, FileData, IFavaAdapter, MoveOptions, ReadChunkOptions, Rea
 import { Logger } from "@hypericon/axe";
 import { FavaClient } from "../../client";
 import { DirInfo, FavaLocation_Fava } from "../../shared";
-import { arrayBufferToBuffer } from "../utils";
+import { toStringOrUint8Array } from "../utils";
 import fetch from "node-fetch";
 
 export class FavaAdapter implements IFavaAdapter<FavaLocation_Fava> {
@@ -100,18 +100,37 @@ export class FavaAdapter implements IFavaAdapter<FavaLocation_Fava> {
   async readFile(loc: FavaLocation_Fava, filePath: string, options?: ReadFileOptions): Promise<ReadFileResult> {
     this.logger.debug(`readFile:`, loc.id, filePath, options);
     const client = this.getClient(loc);
-    const result = await client.readFile(loc.remoteId, filePath, options?.encoding !== undefined ? "text" : "buffer");
-    return arrayBufferToBuffer(result);
+    const result = await client.readFile(loc.remoteId, filePath, {
+      returnAs: options?.encoding !== undefined ? "text" : "buffer",
+    });
+    return {
+      data: toStringOrUint8Array(result),
+    };
   }
 
   async readFileChunk(loc: FavaLocation_Fava, filePath: string, options?: ReadChunkOptions): Promise<ReadChunkResult> {
     this.logger.debug(`readFileChunk:`, loc.id, filePath, options);
     const client = this.getClient(loc);
+
+    const rangeStart = options?.position;
+    const rangeEnd = (options?.position !== undefined && options?.length !== undefined)
+      ? options.position + options.length - 1
+      : undefined;
+
     const result = await client.readFileChunk(loc.remoteId, filePath, {
-      // mimeType: options.,
-      range: 
+      rangeStart,
+      rangeEnd,
+      returnAs: options?.encoding === undefined ? "buffer" : "text",
     });
-    return result;
+
+    return {
+      data: result.data,
+      bytesRead: result.bytesRead,
+      chunkStart: result.chunkStart,
+      chunkEnd: result.chunkEnd,
+      fileSize: result.fileSize,
+      mimeType: result.mimeType,
+    };
   }
 
   async remove(loc: FavaLocation_Fava, path: string): Promise<void> {
@@ -138,15 +157,32 @@ export class FavaAdapter implements IFavaAdapter<FavaLocation_Fava> {
   async writeFile(loc: FavaLocation_Fava, filePath: string, data: FileData, options?: WriteFileOptions): Promise<void> {
     this.logger.debug(`writeFile:`, loc.id, filePath, data, options);
     const client = this.getClient(loc);
-    const result = await client.writeFile(loc.remoteId, filePath, data, { }); // options?
+    const result = await client.writeFile(loc.remoteId, filePath, data, {
+      // mimeType: options.
+    }); // options?
     return;
   }
 
   async writeFileChunk(loc: FavaLocation_Fava, filePath: string, data: FileData, options?: WriteChunkOptions): Promise<WriteChunkResult> {
     this.logger.debug(`writeFileChunk:`, loc.id, filePath, data, options);
     const client = this.getClient(loc);
-    const result = await client.writeFileChunk(loc.remoteId, filePath, data, options);
-    return result;
+
+    const rangeStart = options?.position;
+    const rangeEnd = (options?.position !== undefined && options?.length !== undefined)
+      ? options.position + options.length - 1
+      : undefined;
+
+    const result = await client.writeFileChunk(loc.remoteId, filePath, data, {
+      // mimeType: options.,
+      // mimeType: options.,
+      rangeStart,
+      rangeEnd,
+      // suffixLength,
+    });
+
+    return {
+      bytesWritten: result.bytesWritten,
+    };
   }
 
 }

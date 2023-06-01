@@ -1,6 +1,6 @@
 import urlJoin from "url-join";
-import { ApiGetLocationsResult, ApiGetStatsResult, ApiPathExistsResult, ApiReadDirResult, ApiUpdateResult } from "../shared";
-import { FavaClientConfig } from "./client-options.interface";
+import { ApiGetLocationsResult, ApiGetStatsResult, ApiPathExistsResult, ApiReadDirResult, ApiUpdateResult, ApiWriteChunkResult } from "../shared";
+import { ClientReadChunkOptions, ClientReadChunkResult, ClientReadFileOptions, ClientWriteChunkOptions, ClientWriteChunkResult, ClientWriteFileOptions, FavaClientConfig } from "./client.interface";
 
 // export interface ClientFileData {
 //   data: string | Uint8Array,
@@ -153,7 +153,7 @@ Server config example:
     return result;
   }
 
-  async readFile(locationId: string, path: string, returnAs?: "text" | "buffer"): Promise<string | ArrayBuffer> {
+  async readFile(locationId: string, path: string, opts?: ClientReadFileOptions): Promise<string | Uint8Array> {
 
     const url = urlJoin(this.apiPrefix, `/${locationId}/${path}`);
 
@@ -164,8 +164,8 @@ Server config example:
       }
     });
 
-    if (returnAs === "buffer") return response.arrayBuffer();
-    if (returnAs === "text") return response.text();
+    if (opts?.returnAs === "buffer") return new Uint8Array(await response.arrayBuffer());
+    if (opts?.returnAs === "text") return response.text();
 
     const contentType = response.headers.get("Content-Type") ?? "";
     const lookslikeText = contentType.startsWith("text") || [
@@ -175,20 +175,11 @@ Server config example:
     if (lookslikeText) {
       return response.text();
     } else {
-      return response.arrayBuffer();
+      return new Uint8Array(await response.arrayBuffer());
     }
   }
 
-  async readFileChunk(locationId: string, path: string, opts?: {
-    /** The range start in bytes */
-    rangeStart?: number,
-    /** The range end in bytes - requires the range start to be defined */
-    rangeEnd?: number,
-    /** Read the specified number of bytes fromt he end of the file */
-    suffixLength?: number,
-    returnAs?: "text" | "buffer",
-  }): Promise<string | Uint8Array> {
-    // read       - GET     locId/path            "Range" header
+  async readFileChunk(locationId: string, path: string, opts?: ClientReadChunkOptions): Promise<ClientReadChunkResult> {
 
     const url = urlJoin(this.apiPrefix, `/${locationId}/${path}`);
 
@@ -211,10 +202,41 @@ Server config example:
       headers,
     });
 
-    
+    const contentType = response.headers.get("Content-Type") ?? undefined;
+    const contentLengthRaw = Number(response.headers.get("Content-Length"));
+    const contentLength = Number.isNaN(contentLengthRaw) ? undefined : contentLengthRaw;
 
-    throw new Error("Not implemented");
+    let fileSize: number | undefined = undefined;
+    let rangeStart: number | undefined = undefined;
+    let rangeEnd: number | undefined = undefined;
 
+    const contentRange = response.headers.get("Content-Range") ?? undefined;
+    if (contentRange) {
+      const rangeStr = contentRange.replace("bytes ", "");
+      const [startEnd, size] = rangeStr.split("/").map(r => r.trim());
+      if (size && size !== "*" && (!Number.isNaN(Number(size)))) {
+        fileSize = Number(size);
+      }
+      if (startEnd.includes("-")) {
+        const [start, end] = startEnd.split("-");
+        if (!Number.isNaN(Number(start))) rangeStart = Number(start);
+        if (!Number.isNaN(Number(end))) rangeEnd = Number(end);
+      }
+    }
+
+    const data = opts?.returnAs === "text" ? (await response.text()) :
+      opts?.returnAs === "buffer" ? new Uint8Array(await response.arrayBuffer()) :
+        (contentType?.startsWith("text") || contentType === "application/json") ? (await response.text()) :
+        new Uint8Array(await response.arrayBuffer());
+
+    return {
+      data: data,
+      bytesRead: contentLength,
+      chunkStart: rangeStart,
+      chunkEnd: rangeEnd,
+      fileSize,
+      mimeType: contentType,
+    };
   }
 
   async remove(locationId: string, path: string): Promise<ApiUpdateResult> {
@@ -253,7 +275,7 @@ Server config example:
     return result;
   }
 
-  async writeFile(locationId: string, path: string, data: FileData, opts?: { mimeType?: string }): Promise<ApiUpdateResult> {
+  async writeFile(locationId: string, path: string, data: FileData, opts?: ClientWriteFileOptions): Promise<ApiUpdateResult> {
 
     const url = urlJoin(this.apiPrefix, `/${locationId}/${path}`);
 
@@ -270,22 +292,34 @@ Server config example:
     return result;
   }
 
-  async writeFileChunk(locationId: string, path: string, data: FileData, opts?: { range?: any, mimeType?: string }): Promise<ApiUpdateResult> {
+  async writeFileChunk(locationId: string, path: string, data: FileData, opts?: ClientWriteChunkOptions): Promise<ClientWriteChunkResult> {
 
     const url = urlJoin(this.apiPrefix, `/${locationId}/${path}`);
 
     const headers: { [key: string]: string } = {};
     if (opts?.mimeType) headers["Content-Type"] = opts.mimeType;
-    // if (opts?.range) headers["Range"] = something;
+
+    if (opts?.rangeStart !== undefined) {
+      const rangeStart = opts.rangeStart.toString();
+      const rangeEnd = (opts.rangeEnd !== undefined) ? opts.rangeEnd.toString() : "";
+      headers["Range"] = `bytes=${rangeStart}-${rangeEnd}`;
+    } else if (opts?.suffixLength !== undefined) {
+      const suffixLength = opts.suffixLength.toString();
+      headers["Range"] = `bytes=-${suffixLength}`;
+    } else {
+      headers["Range"] = `bytes=0-`;
+    }
 
     const response = await this._fetch(url, {
       method: "PATCH",
       headers,
       body: data,
     });
-    const result = await response.json() as ApiUpdateResult;
+    const result = await response.json() as ApiWriteChunkResult;
 
-    return result;
+    return {
+      bytesWritten: result.bytesWritten,
+    };
   }
 
 }

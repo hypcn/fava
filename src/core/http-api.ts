@@ -1,7 +1,7 @@
 import { SimpleLogger } from "@hypericon/axe";
 import { Express, Request, Response } from "express";
 import asyncHandler from "express-async-handler";
-import { ApiGetLocationsResult, ApiGetStatsResult, ApiPathExistsResult, ApiReadDirResult, ApiUpdateResult } from "../shared";
+import { ApiGetLocationsResult, ApiGetStatsResult, ApiPathExistsResult, ApiReadDirResult, ApiUpdateResult, ApiWriteChunkResult } from "../shared";
 import { FavaCore } from "./core";
 
 // ----- Location operations:
@@ -180,10 +180,10 @@ export class HttpApi {
 
       else {
         this.logger.debug(`PATCH: writeFileChunk:`, locationId, path);
-        await this.core.writeFileChunk(locationId, path, body, {
+        const chunk = await this.core.writeFileChunk(locationId, path, body, {
           // range?
         });
-        const result: ApiUpdateResult = { update: "writeFileChunk", done: true };
+        const result: ApiWriteChunkResult = { bytesWritten: chunk.bytesWritten };
         res.json(result);
       }
 
@@ -216,23 +216,42 @@ export class HttpApi {
 
     this.logger.debug(`GET: readFileChunk:`, locationId, path, `range: ${parsedRange.start ?? ""} -> ${parsedRange.end ?? ""}`);
 
-    const readChunkResult = await this.core.readFileChunk(locationId, path, {
+    const chunk = await this.core.readFileChunk(locationId, path, {
       position: parsedRange.start,
       length: (parsedRange.start && parsedRange.end) ? parsedRange.end - parsedRange.start : undefined,
     });
 
-    const isComplete = (readChunkResult.bytesRead === readChunkResult.fileSize);
+    const isComplete = (chunk.fileSize && chunk.fileSize === chunk.bytesRead);
     if (isComplete) {
       res.status(200); // OK
-      res.setHeader("Content-Range", `bytes */${readChunkResult.fileSize}`);
+      res.setHeader("Content-Range", `bytes */${chunk.fileSize ?? "*"}`);
     } else {
       res.status(206); // Partial Content
-      res.setHeader("Content-Range", `bytes ${readChunkResult.chunkStart}-${readChunkResult.chunkEnd}/${readChunkResult.fileSize}`);
+      const fileSize = chunk.fileSize ?? "*";
+      const rangeStr = (chunk.chunkStart === undefined || chunk.chunkEnd === undefined)
+        ? "*"
+        : `${chunk.chunkStart}-${chunk.chunkEnd}`;
+      res.setHeader("Content-Range", `bytes ${rangeStr}/${fileSize}`);
+    }
+    if (chunk.bytesRead !== undefined) {
+      res.setHeader("Content-Length", chunk.bytesRead.toString());
     }
 
-    if (readChunkResult.mimeType) res.type(readChunkResult.mimeType);
-    res.send(readChunkResult.data);
+    if (chunk.mimeType) res.type(chunk.mimeType);
+    res.send(chunk.data);
 
+  }
+
+  async writeFileChunk(locationId: string, path: string, data: any, parsedRange: ParsedRange, res: Response) {
+
+    this.logger.debug(`PATCH: writeFileChunk:`, locationId, path);
+
+    const chunk = await this.core.writeFileChunk(locationId, path, data, {
+      
+    });
+    const result: ApiWriteChunkResult = { bytesWritten: chunk.bytesWritten };
+    res.json(result);
+    
   }
 
 }

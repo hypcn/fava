@@ -16,33 +16,36 @@ export interface ReadFileOptions {
   // filesystem flags? string?
 }
 
+export interface ReadFileResult {
+  data: string | Uint8Array,
+}
+
 export interface ReadChunkOptions {
-  /** When the data is a string, specify the encoding */
+  /** If the data is a string, specify the encoding */
   encoding?: BufferEncoding,
-  /** The buffer to write the data to */
-  buffer?: Buffer,
-  /** The offset within the buffer to start writing at */
-  offset?: number,
+  // /** The buffer to write the data to */
+  // buffer?: Buffer,
+  // /** The offset within the buffer to start writing at */
+  // offset?: number,
   /** The position in the file to start reading at */
   position?: number,
   /** The number of bytes to read */
   length?: number,
 }
 
-export type ReadFileResult = Buffer | string;
-
 export interface ReadChunkResult {
-  data: string | Buffer,
+  /** The data read from the file */
+  data: string | Uint8Array,
   /** The number of bytes read */
-  bytesRead: number,
+  bytesRead: number | undefined,
   /** The start of the range, 0-indexed, inclusive */
-  chunkStart: number,
+  chunkStart: number | undefined,
   /** The end of the range, 0-indexed, inclusive */
-  chunkEnd: number,
+  chunkEnd: number | undefined,
   /** The total size of the file */
-  fileSize: number,
-  /** May be empty for unknown types */
-  mimeType: string,
+  fileSize: number | undefined,
+  /** May be undefined for unknown types */
+  mimeType: string | undefined,
 }
 
 export interface WriteChunkOptions {
@@ -50,12 +53,12 @@ export interface WriteChunkOptions {
   encoding?: BufferEncoding,
   // mode? integer?
   // filesystem flags? string?
-  /** When the data is a buffer, specify the offset within the buffer to start writing from */
-  offset?: number,
-  /** When the data is a buffer, specify number of bytes to write */
-  length?: number,
+  // /** When the data is a buffer, specify the offset within the buffer to start writing from */
+  // offset?: number,
   /** Specify the position within the file at which to start writing */
   position?: number,
+  /** When the data is a buffer, specify number of bytes to write */
+  length?: number,
 }
 
 export interface WriteChunkResult {
@@ -69,7 +72,7 @@ export interface WriteFileOptions {
   // filesystem flags? string?
 }
 
-export type FileData = string | Buffer | Uint8Array;
+export type FileData = string | Uint8Array;
 
 export interface IFavaAdapter<T extends FavaLocation> {
 

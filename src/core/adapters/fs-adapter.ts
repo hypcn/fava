@@ -103,9 +103,12 @@ export class FsAdapter implements IFavaAdapter<FavaLocation_FS> {
   async readFile(loc: FavaLocation_FS, filePath: string, options?: ReadFileOptions): Promise<ReadFileResult> {
     this.logger.verbose(`readFile:`, loc.id, filePath);
     const path = join(loc.root, filePath);
-    return fse.readFile(path, {
+    const file = await fse.readFile(path, {
       encoding: options?.encoding,
     });
+    return {
+      data: file,
+    };
   }
 
   // fails if file doesn't exist
@@ -127,7 +130,7 @@ export class FsAdapter implements IFavaAdapter<FavaLocation_FS> {
     const length = options?.length || fileSize - position;
 
     // Read the chunk from the file
-    const buffer = options?.buffer ?? Buffer.alloc(length);
+    const buffer = Buffer.alloc(length);
     const fd = await fse.open(fullPath, 'r');
     try {
       const { bytesRead } = await fse.read(fd, buffer, 0, length, position);
@@ -140,7 +143,7 @@ export class FsAdapter implements IFavaAdapter<FavaLocation_FS> {
         chunkStart: position,
         chunkEnd: position + bytesRead - 1,
         fileSize,
-        mimeType: mime.getType(filePath) ?? "",
+        mimeType: mime.getType(filePath) ?? undefined,
       };
     } finally {
       await fse.close(fd);
@@ -215,16 +218,23 @@ export class FsAdapter implements IFavaAdapter<FavaLocation_FS> {
 
     // Set default options
     const encoding = (options?.encoding || 'utf8') as BufferEncoding;
-    const offset = options?.offset || 0;
-    const length = options?.length || (data instanceof Buffer ? data.length : Buffer.byteLength(data, encoding));
     const position = options?.position || null;
+    const length = (options?.length || (data instanceof Uint8Array)
+        ? data.length
+        : Buffer.byteLength(data, encoding));
 
     // Write the chunk to the file
     const fd = await fse.open(fullPath, 'r+');
     try {
-      const dataBuffer = typeof data === "string" ? Buffer.from(data, "utf8") : data;
-      const { bytesWritten, buffer } = await fse.write(fd, dataBuffer, offset, length, position);
-      return { bytesWritten };
+      let writeResult: { bytesWritten: number, buffer: string | Uint8Array };
+      if (typeof data === "string") {
+        writeResult = await fse.write(fd, data, position, encoding);
+      } else {
+        writeResult = await fse.write(fd, data, 0, length, position);
+      }
+      return {
+        bytesWritten: writeResult.bytesWritten
+      };
     } finally {
       await fse.close(fd);
     }

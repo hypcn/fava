@@ -17,6 +17,10 @@ export interface ApiPathExistsResult {
   exists: boolean,
 }
 
+export interface ApiWriteChunkResult {
+  bytesWritten: number,
+}
+
 export type ApiUpdateOp =
   | "append"
   | "copy"
@@ -24,10 +28,10 @@ export type ApiUpdateOp =
   | "ensureDir"
   | "ensureFile"
   | "move"
+  | "remove"
   | "rename"
   | "writeFile"
   | "writeFileChunk"
-  | "remove"
   ;
 
 export interface ApiUpdateResult {
