@@ -247,7 +247,7 @@ describe("FS Adapter", () => {
     const fileData = await adapter.readFile(testLocationOne, "file.txt", { encoding: "utf8" });
 
     // Check if the file data is correct
-    expect(fileData).toBe(data);
+    expect(fileData.data).toBe(data);
   });
 
   test("implements readFileChunk", async () => {
