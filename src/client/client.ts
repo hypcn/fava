@@ -1,7 +1,6 @@
 import urlJoin from "url-join";
 import { ApiGetLocationsResult, ApiGetStatsResult, ApiPathExistsResult, ApiReadDirResult, ApiUpdateResult } from "../shared";
-import { FavaClientOptions } from "./client-options.interface";
-import fetch from "node-fetch";
+import { FavaClientConfig } from "./client-options.interface";
 
 // export interface ClientFileData {
 //   data: string | Uint8Array,
@@ -14,21 +13,26 @@ const DEFAULT_ORIGIN = "http://localhost:6131";
 
 export class FavaClient {
 
-  private _fetch: typeof fetch = (globalThis as any)?.window?.fetch
-    ? window.fetch.bind(window) as any
-    : fetch;
+  private _fetch: typeof fetch; // = (globalThis as any)?.window?.fetch;
+    // ? window.fetch.bind(window) as any
+    // : fetch;
   
   private _apiPrefix: string;
   get apiPrefix() { return this._apiPrefix; }
 
-  constructor(options?: FavaClientOptions) {
+  constructor(config: FavaClientConfig) {
 
-    // if (config.fetch) this._fetch = config.fetch;
-    if (!this._fetch) throw new Error("No `fetch(…)` implementation provided!");
-    // if (window) this._fetch.bind(window);
+    this._fetch = config.fetch;
+    if (!this._fetch) throw new Error(`No \`fetch(…)\` implementation provided!
+Browser config example:
+  \`{ fetch: window.fetch.bind(window) }\`
+Server config example:
+  \`import fetch from "node-fetch";\`
+  \`{ fetch: fetch as any }\`
+`);
 
-    const origin = options?.origin || DEFAULT_ORIGIN;
-    const routePrefix = options?.routePrefix || "";
+    const origin = config?.origin || DEFAULT_ORIGIN;
+    const routePrefix = config?.routePrefix || "";
 
     this._apiPrefix = urlJoin(origin, routePrefix, "/api");
 

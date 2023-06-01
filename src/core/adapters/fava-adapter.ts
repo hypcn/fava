@@ -3,6 +3,7 @@ import { Logger } from "@hypericon/axe";
 import { FavaClient } from "../../client";
 import { DirInfo, FavaLocation_Fava } from "../../shared";
 import { arrayBufferToBuffer } from "../utils";
+import fetch from "node-fetch";
 
 export class FavaAdapter implements IFavaAdapter<FavaLocation_Fava> {
 
@@ -32,7 +33,7 @@ export class FavaAdapter implements IFavaAdapter<FavaLocation_Fava> {
 
     this.logger.debug(`Creating new client for Fava location with ID: ${location.id} (${location.origin})`);
     const client = new FavaClient({
-      // fetch: fetch as any,
+      fetch: fetch as any,
       origin: location.origin,
       routePrefix: location.routePrefix,
     });

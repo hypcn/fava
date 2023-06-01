@@ -9,7 +9,7 @@ const origin = isDev
   : location.origin;
 
 export const fava = new FavaClient({
-  // fetch
+  fetch: window.fetch.bind(window),
   origin,
   routePrefix: "",
 });
