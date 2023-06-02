@@ -155,6 +155,7 @@ Server config example:
 
   async readFile(locationId: string, path: string, opts?: { returnAs: "text" }): Promise<string>
   async readFile(locationId: string, path: string, opts?: { returnAs: "binary" }): Promise<Uint8Array>
+  async readFile(locationId: string, path: string, opts?: { returnAs: "text" | "binary" }): Promise<string | Uint8Array>
   async readFile(locationId: string, path: string, opts?: ClientReadFileOptions): Promise<string | Uint8Array> {
 
     const url = urlJoin(this.apiPrefix, `/${locationId}/${path}`);
