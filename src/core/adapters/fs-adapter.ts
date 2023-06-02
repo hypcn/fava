@@ -36,7 +36,7 @@ export class FsAdapter implements IFavaAdapter<FavaLocation_FS> {
     const fullSrcPath = join(fromLoc.root, fromPath);
     const fullDestPath = join(toLoc.root, toPath);
     return fse.copy(fullSrcPath, fullDestPath, {
-      overwrite: options?.overwrite ?? false,
+      overwrite: (options?.overwrite === true),
       errorOnExist: true,
     });
   }

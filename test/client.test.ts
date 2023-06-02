@@ -7,6 +7,7 @@ import { Fava, FavaLocation, FileInfo } from "../src";
 import { FavaClient } from "../src/client";
 import fetch from "node-fetch";
 import { mkdir, readFile, readdir, writeFile } from "fs/promises";
+import { backslashToForward } from "../src/core/utils";
 
 const testLogger: SimpleLogger = {
   error: (...mgs: any[]) => { /* noop */ },
@@ -40,7 +41,7 @@ describe("Fava client", () => {
     ensureDirSync(testLocationRootOne);
     ensureDirSync(testLocationRootTwo);
 
-    const fava = new Fava({
+    fava = new Fava({
       getLogger: (_) => testLogger,
       http: true,
       locations: [
@@ -224,6 +225,7 @@ describe("Fava client", () => {
 
     // Setup a file and a directory
     await writeFile(locationFilePath, "File content");
+    await remove(locationDirPath);
     await mkdir(locationDirPath);
 
     // Call the client's stats method for a file
@@ -304,6 +306,7 @@ describe("Fava client", () => {
 
     // Setup a file and a directory
     await writeFile(locationFilePath, "File content");
+    await remove(locationDirPath);
     await mkdir(locationDirPath);
 
     // Call the client's exists method for a file
@@ -330,6 +333,7 @@ describe("Fava client", () => {
     const locationFilePath2 = join(locationDirPath, filePath2);
 
     // Setup a directory with two files
+    await remove(locationDirPath);
     await mkdir(locationDirPath);
     await writeFile(locationFilePath1, "File 1 content");
     await writeFile(locationFilePath2, "File 2 content");
@@ -347,14 +351,14 @@ describe("Fava client", () => {
     const file2Info = readDirResult.dirInfo.files.find((file) => file.filename === filePath2)!;
 
     expect(file1Info).toBeDefined();
-    expect(file1Info.fullpath).toBe(join(dirPath, filePath1));
+    expect(file1Info.fullpath).toBe(backslashToForward(join(dirPath, filePath1)));
     expect(file1Info.basename).toBe("file1");
     expect(file1Info.ext).toBe(".txt");
     expect(file1Info.mimeType).toBe("text/plain");
     expect(file1Info.isDir).toBe(false);
 
     expect(file2Info).toBeDefined();
-    expect(file2Info.fullpath).toBe(join(dirPath, filePath2));
+    expect(file2Info.fullpath).toBe(backslashToForward(join(dirPath, filePath2)));
     expect(file2Info.basename).toBe("file2");
     expect(file2Info.ext).toBe(".txt");
     expect(file2Info.mimeType).toBe("text/plain");
@@ -375,6 +379,7 @@ describe("Fava client", () => {
     const binaryFileContent = new Uint8Array([1, 2, 3, 4, 5]);
 
     // Setup a directory with a text file and a binary file
+    await remove(locationDirPath);
     await mkdir(locationDirPath);
     await writeFile(locationTextFilePath, textFileContent);
     await writeFile(locationBinaryFilePath, binaryFileContent);
@@ -412,6 +417,7 @@ describe("Fava client", () => {
     const fileContentBuffer = new TextEncoder().encode(fileContent);
 
     // Setup a directory with a text file
+    await remove(locationDirPath);
     await mkdir(locationDirPath);
     await writeFile(locationFilePath, fileContent);
 

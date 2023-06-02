@@ -116,7 +116,7 @@ export class HttpApi {
 
       if (hasQuery(req, "moveFrom")) {
         const from = locIdAndPathFromQuery(req, "moveFrom");
-        this.logger.debug(`PUT: move:`, from.locId, from.path, "->", locationId, path);
+        this.logger.debug(`PUT: move:`, from.locId, from.path, "->", locationId, path, "overwrite?", isOverwrite);
         await this.core.move(from.locId, from.path, locationId, path, { overwrite: isOverwrite });
         const result: ApiUpdateResult = { update: "move", done: true };
         res.json(result);
@@ -124,7 +124,7 @@ export class HttpApi {
 
       else if (hasQuery(req, "copyFrom")) {
         const from = locIdAndPathFromQuery(req, "copyFrom");
-        this.logger.debug(`PUT: copy:`, from.locId, from.path, "->", locationId, path);
+        this.logger.debug(`PUT: copy:`, from.locId, from.path, "->", locationId, path, "overwrite?", isOverwrite);
         await this.core.copy(from.locId, from.path, locationId, path, { overwrite: isOverwrite });
         const result: ApiUpdateResult = { update: "copy", done: true };
         res.json(result);
