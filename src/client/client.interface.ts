@@ -21,7 +21,7 @@ export interface FavaClientConfig {
 }
 
 export interface ClientReadFileOptions {
-  returnAs?: "text" | "buffer",
+  returnAs?: "text" | "binary",
 }
 
 export interface ClientReadChunkOptions {
@@ -31,7 +31,7 @@ export interface ClientReadChunkOptions {
   rangeEnd?: number,
   /** Read the specified number of bytes fromt he end of the file */
   suffixLength?: number,
-  returnAs?: "text" | "buffer",
+  returnAs?: "text" | "binary",
 }
 
 export interface ClientReadChunkResult {

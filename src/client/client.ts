@@ -153,6 +153,8 @@ Server config example:
     return result;
   }
 
+  async readFile(locationId: string, path: string, opts?: { returnAs: "text" }): Promise<string>
+  async readFile(locationId: string, path: string, opts?: { returnAs: "binary" }): Promise<Uint8Array>
   async readFile(locationId: string, path: string, opts?: ClientReadFileOptions): Promise<string | Uint8Array> {
 
     const url = urlJoin(this.apiPrefix, `/${locationId}/${path}`);
@@ -164,7 +166,7 @@ Server config example:
       }
     });
 
-    if (opts?.returnAs === "buffer") return new Uint8Array(await response.arrayBuffer());
+    if (opts?.returnAs === "binary") return new Uint8Array(await response.arrayBuffer());
     if (opts?.returnAs === "text") return response.text();
 
     const contentType = response.headers.get("Content-Type") ?? "";
@@ -225,7 +227,7 @@ Server config example:
     }
 
     const data = opts?.returnAs === "text" ? (await response.text()) :
-      opts?.returnAs === "buffer" ? new Uint8Array(await response.arrayBuffer()) :
+      opts?.returnAs === "binary" ? new Uint8Array(await response.arrayBuffer()) :
         (contentType?.startsWith("text") || contentType === "application/json") ? (await response.text()) :
         new Uint8Array(await response.arrayBuffer());
 
