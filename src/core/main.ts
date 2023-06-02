@@ -157,15 +157,19 @@ export class Fava {
       this.server = createServer();
     }
 
+    const loggerHttp = this.getLogger("HTTP");
+    const loggerMiddleware = this.getLogger("HTTP");
+    const loggerErrHandler = this.getLogger("HTTP");
+
     this.app = express();
-    configureMiddleware(this.app, config);
+    configureMiddleware(this.app, config, loggerMiddleware);
     this.server.on("request", this.app);
 
     if (config.http) {
       const httpApi = new HttpApi({
         core: this.core,
         routePrefix: this.httpApiPrefix,
-        logger: this.getLogger("HTTP"),
+        logger: loggerHttp,
       });
       httpApi.addApiToApp(this.app);
       // configureHttpApi(this.app, this.core, {
@@ -193,7 +197,7 @@ export class Fava {
     }
 
     // Add error handlers last
-    configureErrorHandler(this.app);
+    configureErrorHandler(this.app, loggerErrHandler);
 
   }
 
