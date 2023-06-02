@@ -6,7 +6,8 @@ import urljoin from "url-join";
 import { Fava, FavaLocation } from "../src";
 import { FavaClient } from "../src/client";
 import { FavaCore } from "../src/core/core";
-import { mockAndSpyOnCore } from "./test-utils";
+import { mockAndSpyOnAdapter, mockAndSpyOnCore } from "./test-utils";
+import fetch from "node-fetch";
 
 const testLogger: SimpleLogger = {
   error: (...mgs: any[]) => { /* noop */ },
@@ -45,7 +46,9 @@ describe("Fava client", () => {
   });
 
   test("can be created", () => {
-    const favaClient = new FavaClient();
+    const favaClient = new FavaClient({
+      fetch: fetch as any,
+    });
     expect(favaClient).toBeDefined();
   });
 
@@ -54,6 +57,7 @@ describe("Fava client", () => {
     const routePrefix = "a/route/prefix";
 
     const favaClient = new FavaClient({
+      fetch: fetch as any,
       origin: "http://example.com",
       routePrefix: "a/route/prefix",
     });
@@ -74,15 +78,20 @@ describe("Fava client", () => {
     });
     await fava.onReady;
 
-    const favaClient = new FavaClient();
+    const favaClient = new FavaClient({
+      fetch: fetch as any,
+    });
 
     const core = (fava as any).core as FavaCore;
     const coreSpy = mockAndSpyOnCore(core);
 
+    // const fsAdapter = core.getAdapter(testLocationOne);
+    // const adapterSpy = mockAndSpyOnAdapter(fsAdapter)
+
     const getLocationsRes = await favaClient.getLocations();
     expect(getLocationsRes.locations).toMatchObject(fava.getLocations());
 
-    const appendRes = await favaClient.append(testLocationOne.id, "file.txt", { data: "data", mimeType: "text/plain" });
+    const appendRes = await favaClient.append(testLocationOne.id, "file.txt", "data", { mimeType: "text/plain" });
     await fava.append(testLocationOne.id, "file.txt", "data");
     expect(coreSpy.append).toHaveBeenCalledTimes(2);
 
@@ -136,11 +145,11 @@ describe("Fava client", () => {
     await fava.rename(testLocationOne.id, "file.txt", "file2.txt");
     expect(coreSpy.rename).toHaveBeenCalledTimes(2);
 
-    const writeFileRes = await favaClient.writeFile(testLocationOne.id, "file.txt", { data: "data", mimeType: "text/plain" });
+    const writeFileRes = await favaClient.writeFile(testLocationOne.id, "file.txt", "data", { mimeType: "text/plain" });
     await fava.writeFile(testLocationOne.id, "file.txt", "data");
     expect(coreSpy.writeFile).toHaveBeenCalledTimes(2);
 
-    const writeRes = await favaClient.writeFileChunk(testLocationOne.id, "file.txt", { data: "data", mimeType: "text/plain" });
+    const writeRes = await favaClient.writeFileChunk(testLocationOne.id, "file.txt", "data", { mimeType: "text/plain" });
     await fava.writeFileChunk(testLocationOne.id, "file.txt", "data");
     expect(coreSpy.writeFileChunk).toHaveBeenCalledTimes(2);
 

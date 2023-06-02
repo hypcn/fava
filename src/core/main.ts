@@ -165,7 +165,7 @@ export class Fava {
       const httpApi = new HttpApi({
         core: this.core,
         routePrefix: this.httpApiPrefix,
-        logger: new Logger("HTTP"),
+        logger: this.getLogger("HTTP"),
       });
       httpApi.addApiToApp(this.app);
       // configureHttpApi(this.app, this.core, {
