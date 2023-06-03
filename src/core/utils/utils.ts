@@ -10,5 +10,6 @@ export function backslashToForward(s: string): string {
 
 export function toStringOrUint8Array(input: string | ArrayBuffer | Buffer): string | Uint8Array {
   if (typeof input === "string") return input;
+  if (input instanceof Buffer) return input.toString();
   return new Uint8Array(input);
 }

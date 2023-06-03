@@ -121,6 +121,11 @@ describe("HTTP API", () => {
     const apiResult = await fava.copy(fromLocId, fromPath, toLocId, toPath);
 
     expect(testAdapterSpies.copy).toHaveBeenCalledTimes(2);
+
+    // If the query parameter is malformed, expect failure
+    const url2 = urljoin(baseUrl(), toLocId, toPath, `?copyFrom`);
+    const response2 = await fetch(url2, { method: "PUT" });
+    expect(response2.ok).toBe(false);
   });
 
   test("emptyDir - DELETE", async () => {
@@ -275,6 +280,11 @@ describe("HTTP API", () => {
     const apiResult = await fava.rename(locationId, fromPath, toPath);
 
     expect(testAdapterSpies.rename).toHaveBeenCalledTimes(2);
+
+    // renameFrom must be supplied
+    const url2 = urljoin(baseUrl(), locationId, toPath, `?renameFrom`);
+    const response2 = await fetch(url2, { method: "PUT" });
+    expect(response2.ok).toBe(false);
   });
 
   test("stats - GET", async () => {
@@ -330,8 +340,25 @@ describe("HTTP API", () => {
 
     expect(testAdapterSpies.writeFileChunk).toHaveBeenCalledTimes(2);
 
-    // TODO: check no ranges doesn't work
-    // TODO: check multiple ranges doesn't work
+    // Requires a range to be supplied
+    const response2 = await fetch(url, {
+      method: "PATCH",
+      headers: {
+        Range: "bytes=-3",
+      },
+      body: data,
+    });
+    expect(response2.ok).toBe(false);
+
+    // Only one range can be supplied
+    const response3 = await fetch(url, {
+      method: "PATCH",
+      headers: {
+        Range: "bytes=1-3, 5-7",
+      },
+      body: data,
+    });
+    expect(response3.ok).toBe(false);
   });
 
 });
