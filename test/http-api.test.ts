@@ -319,7 +319,9 @@ describe("HTTP API", () => {
 
     const response = await fetch(url, {
       method: "PATCH",
-      headers: {},
+      headers: {
+        Range: "bytes=1-3",
+      },
       body: data,
     });
     const httpResult = (await response.json()) as ApiUpdateResult;
@@ -328,6 +330,7 @@ describe("HTTP API", () => {
 
     expect(testAdapterSpies.writeFileChunk).toHaveBeenCalledTimes(2);
 
+    // TODO: check no ranges doesn't work
     // TODO: check multiple ranges doesn't work
   });
 
