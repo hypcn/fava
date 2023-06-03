@@ -17,7 +17,14 @@ export interface ReadFileOptions {
 }
 
 export interface ReadFileResult {
+  /** The file data */
   data: string | Uint8Array,
+  /** The total file size in bytes */
+  fileSize: number | undefined,
+  /** The mime type of the file, may be empty if unknown */
+  mimeType: string,
+  /** When the content or metadata were last modified, as millisecond timestamp */
+  lastModified: number | undefined,
 }
 
 export interface ReadChunkOptions {

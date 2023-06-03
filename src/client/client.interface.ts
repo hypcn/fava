@@ -20,8 +20,17 @@ export interface FavaClientConfig {
 
 }
 
-export interface ClientReadFileOptions {
-  returnAs?: "text" | "binary",
+export interface ClientReadFileOptions<T extends "text" | "binary" = any> {
+  returnAs?: T,
+}
+
+export type FileResultData<T extends "text" | "binary" = any> = T extends "text" ? string : T extends "binary" ? Uint8Array : string | Uint8Array;
+
+export interface ClientReadFileResult<T extends "text" | "binary" = any> {
+  data: FileResultData<T>,
+  mimeType: string,
+  fileSize: number | undefined,
+  lastModified: number | undefined,
 }
 
 export interface ClientReadChunkOptions {
@@ -29,8 +38,8 @@ export interface ClientReadChunkOptions {
   rangeStart?: number,
   /** The range end in bytes - requires the range start to be defined */
   rangeEnd?: number,
-  /** Read the specified number of bytes fromt he end of the file */
-  suffixLength?: number,
+  // /** Read the specified number of bytes fromt he end of the file */
+  // suffixLength?: number,
   returnAs?: "text" | "binary",
 }
 
@@ -57,10 +66,10 @@ export interface ClientWriteFileOptions {
 export interface ClientWriteChunkOptions {
   /** The range start in bytes */
   rangeStart?: number,
-  /** The range end in bytes - requires the range start to be defined */
+  /** The range end in bytes - requires the range start to be defined. Does not truncate string chunks. */
   rangeEnd?: number,
-  /** Read the specified number of bytes fromt he end of the file */
-  suffixLength?: number,
+  // /** Read the specified number of bytes from the end of the file */
+  // suffixLength?: number,
   /**  */
   mimeType?: string,
 }

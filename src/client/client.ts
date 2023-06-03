@@ -1,6 +1,7 @@
 import urlJoin from "url-join";
 import { ApiGetLocationsResult, ApiGetStatsResult, ApiPathExistsResult, ApiReadDirResult, ApiUpdateResult, ApiWriteChunkResult } from "../shared";
-import { ClientReadChunkOptions, ClientReadChunkResult, ClientReadFileOptions, ClientWriteChunkOptions, ClientWriteChunkResult, ClientWriteFileOptions, FavaClientConfig } from "./client.interface";
+import { ClientReadChunkOptions, ClientReadChunkResult, ClientReadFileOptions, ClientReadFileResult, ClientWriteChunkOptions, ClientWriteChunkResult, ClientWriteFileOptions, FavaClientConfig, FileResultData } from "./client.interface";
+import { toNumberOrUndefined } from "@hypericon/utils";
 
 // export interface ClientFileData {
 //   data: string | Uint8Array,
@@ -153,10 +154,7 @@ Server config example:
     return result;
   }
 
-  async readFile(locationId: string, path: string, opts?: { returnAs: "text" }): Promise<string>
-  async readFile(locationId: string, path: string, opts?: { returnAs: "binary" }): Promise<Uint8Array>
-  async readFile(locationId: string, path: string, opts?: { returnAs: "text" | "binary" }): Promise<string | Uint8Array>
-  async readFile(locationId: string, path: string, opts?: ClientReadFileOptions): Promise<string | Uint8Array> {
+  async readFile<T extends "text" | "binary" = any>(locationId: string, path: string, opts?: ClientReadFileOptions<T>): Promise<ClientReadFileResult<T>> {
 
     const url = urlJoin(this.apiPrefix, `/${locationId}/${path}`);
 
@@ -167,19 +165,27 @@ Server config example:
       }
     });
 
-    if (opts?.returnAs === "binary") return new Uint8Array(await response.arrayBuffer());
-    if (opts?.returnAs === "text") return response.text();
-
     const contentType = response.headers.get("Content-Type") ?? "";
+    const contentLength = toNumberOrUndefined(response.headers.get("Content-Length"));
+    const lastModifiedStr = response.headers.get("Last-Modified");
+    const lastModified = lastModifiedStr ? new Date(lastModifiedStr).valueOf() : undefined;
+
     const lookslikeText = contentType.startsWith("text") || [
       "application/json",
     ].includes(contentType);
 
-    if (lookslikeText) {
-      return response.text();
-    } else {
-      return new Uint8Array(await response.arrayBuffer());
-    }
+    const returnAs: "text" | "binary" = opts?.returnAs ?? (lookslikeText ? "text" : "binary");
+
+    const data = returnAs === "text"
+      ? await response.text()
+      : await new Uint8Array(await response.arrayBuffer());
+
+    return {
+      data: data as FileResultData<T>,
+      fileSize: contentLength,
+      mimeType: contentType,
+      lastModified,
+    };
   }
 
   async readFileChunk(locationId: string, path: string, opts?: ClientReadChunkOptions): Promise<ClientReadChunkResult> {
@@ -193,9 +199,8 @@ Server config example:
       const rangeStart = opts.rangeStart.toString();
       const rangeEnd = (opts.rangeEnd !== undefined) ? opts.rangeEnd.toString() : "";
       headers["Range"] = `bytes=${rangeStart}-${rangeEnd}`;
-    } else if (opts?.suffixLength !== undefined) {
-      const suffixLength = opts.suffixLength.toString();
-      headers["Range"] = `bytes=-${suffixLength}`;
+    // } else if (opts?.suffixLength !== undefined) {
+    //   headers["Range"] = `bytes=-${opts.suffixLength.toString()}`;
     } else {
       headers["Range"] = `bytes=0-`;
     }
@@ -306,9 +311,9 @@ Server config example:
       const rangeStart = opts.rangeStart.toString();
       const rangeEnd = (opts.rangeEnd !== undefined) ? opts.rangeEnd.toString() : "";
       headers["Range"] = `bytes=${rangeStart}-${rangeEnd}`;
-    } else if (opts?.suffixLength !== undefined) {
-      const suffixLength = opts.suffixLength.toString();
-      headers["Range"] = `bytes=-${suffixLength}`;
+    // } else if (opts?.suffixLength !== undefined) {
+    //   const suffixLength = opts.suffixLength.toString();
+    //   headers["Range"] = `bytes=-${suffixLength}`;
     } else {
       headers["Range"] = `bytes=0-`;
     }

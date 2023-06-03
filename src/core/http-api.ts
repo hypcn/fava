@@ -92,6 +92,7 @@ export class HttpApi {
         if (parsedRange === undefined) {
           res.status(501).send("Only a single range of bytes is supported.");
         } else {
+          this.logger.debug(`GET: readFileChunk:`, locationId, path, `range: ${parsedRange.start} -> ${parsedRange.end ?? ""}`);
           await this.readFileChunk(locationId, path, parsedRange, res);
         }
       }
@@ -99,9 +100,12 @@ export class HttpApi {
       else {
         this.logger.debug(`GET: readFile:`, locationId, path);
         const file = await this.core.readFile(locationId, path);
-        // TODO: set Content-Type
 
-        res.send(file);
+        if (file.lastModified) res.setHeader("Last-Modified", new Date(file.lastModified).toUTCString());
+        if (file.fileSize) res.setHeader("Content-Length", file.fileSize);
+        if (file.mimeType) res.type(file.mimeType);
+
+        res.send(file.data);
       }
 
     }));
@@ -179,13 +183,13 @@ export class HttpApi {
       }
 
       else {
-        this.logger.debug(`PATCH: writeFileChunk:`, locationId, path);
-        const chunk = await this.core.writeFileChunk(locationId, path, body, {
-          // range?
-          // TODO
-        });
-        const result: ApiWriteChunkResult = { bytesWritten: chunk.bytesWritten };
-        res.json(result);
+        const parsedRange = parseRange(req.headers.range);
+        if (parsedRange === undefined) {
+          res.status(400).send("A single range of bytes must be specified to patch a file.");
+        } else {
+          this.logger.debug(`PATCH: writeFileChunk:`, locationId, path, `range: ${parsedRange.start} -> ${parsedRange.end ?? ""}`);
+          return this.writeFileChunk(locationId, path, body, parsedRange, res)
+        }
       }
 
     }));
@@ -215,11 +219,10 @@ export class HttpApi {
 
   async readFileChunk(locationId: string, path: string, parsedRange: ParsedRange, res: Response) {
 
-    this.logger.debug(`GET: readFileChunk:`, locationId, path, `range: ${parsedRange.start ?? ""} -> ${parsedRange.end ?? ""}`);
-
+    const { position, length } = parsedRangeToPositionLength(parsedRange);
     const chunk = await this.core.readFileChunk(locationId, path, {
-      position: parsedRange.start,
-      length: (parsedRange.start && parsedRange.end) ? parsedRange.end - parsedRange.start : undefined,
+      position,
+      length,
     });
 
     const isComplete = (chunk.fileSize && chunk.fileSize === chunk.bytesRead);
@@ -245,12 +248,18 @@ export class HttpApi {
 
   async writeFileChunk(locationId: string, path: string, data: any, parsedRange: ParsedRange, res: Response) {
 
-    this.logger.debug(`PATCH: writeFileChunk:`, locationId, path);
-
+    const { position, length } = parsedRangeToPositionLength(parsedRange);
     const chunk = await this.core.writeFileChunk(locationId, path, data, {
-      
+      // encoding,
+      position,
+      length,
     });
-    const result: ApiWriteChunkResult = { bytesWritten: chunk.bytesWritten };
+
+    // set headers and that
+
+    const result: ApiWriteChunkResult = {
+      bytesWritten: chunk.bytesWritten
+    };
     res.json(result);
     
   }
@@ -288,7 +297,7 @@ function locIdAndPathFromQuery(req: Request, queryName: string) {
 
 type ParsedRange = {
   units: string,
-  start: number | undefined,
+  start: number,
   end: number | undefined,
 };
 
@@ -314,7 +323,7 @@ function parseRange(rangeHeader: string | undefined): ParsedRange | undefined {
   let end = endStr === "" ? undefined : parseInt(endStr);
   if (Number.isNaN(start)) start = undefined;
   if (Number.isNaN(end)) end = undefined;
-  if (start === undefined && end === undefined) return undefined;
+  if (start === undefined) return undefined;
 
   const range: ParsedRange = {
     units,
@@ -322,4 +331,12 @@ function parseRange(rangeHeader: string | undefined): ParsedRange | undefined {
     end,
   };
   return range;
+}
+
+function parsedRangeToPositionLength(parsedRange: ParsedRange) {
+  const position = parsedRange.start;
+  const length = (parsedRange.start !== undefined && parsedRange.end !== undefined)
+    ? parsedRange.end - parsedRange.start + 1
+    : undefined;
+  return { position, length };
 }

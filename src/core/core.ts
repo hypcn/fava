@@ -31,6 +31,8 @@ export class FavaCore {
     if (options?.locations) this.locations.push(...options.locations);
   }
 
+  // ========== Location & Adapters
+
   getLocations(): FavaLocation[] {
     return this.locations;
   }
@@ -47,44 +49,7 @@ export class FavaCore {
     return adapter;
   }
 
-  // ========== READ
-
-  async exists(locId: string, path: string): Promise<boolean> {
-    this.logger.debug(`pathExists`, locId, path);
-    const loc = this.findLocation(locId);
-    const adapter = this.getAdapter(loc);
-    return adapter.exists(loc, path);
-  }
-
-  async readDir(locId: string, dirPath: string) {
-    this.logger.debug(`readDir`, locId, dirPath);
-    const loc = this.findLocation(locId);
-    const adapter = this.getAdapter(loc);
-    return adapter.readDir(loc, dirPath);
-  }
-
-  async readFile(locId: string, filePath: string, options?: ReadFileOptions) {
-    this.logger.debug(`readFile`, locId, filePath, options);
-    const loc = this.findLocation(locId);
-    const adapter = this.getAdapter(loc);
-    return adapter.readFile(loc, filePath, options);
-  }
-
-  async readFileChunk(locId: string, filePath: string, options?: ReadChunkOptions) {
-    this.logger.debug(`read`, locId, filePath, options);
-    const loc = this.findLocation(locId);
-    const adapter = this.getAdapter(loc);
-    return adapter.readFileChunk(loc, filePath, options);
-  }
-
-  async stat(locId: string, path: string) {
-    this.logger.debug(`stat`, locId, path);
-    const loc = this.findLocation(locId);
-    const adapter = this.getAdapter(loc);
-    return adapter.stat(loc, path);
-  }
-
-  // ========== UPDATE
+  // ========== File API
 
   async append(locId: string, filePath: string, data: FileData, options?: WriteFileOptions) {
     this.logger.debug(`append`, locId, filePath, data, options);
@@ -108,11 +73,11 @@ export class FavaCore {
     }
   }
 
-  async ensureFile(locId: string, filePath: string) {
-    this.logger.debug(`ensureFile`, locId, filePath);
+  async emptyDir(locId: string, dirPath: string) {
+    this.logger.debug(`emptyDir`, locId, dirPath);
     const loc = this.findLocation(locId);
     const adapter = this.getAdapter(loc);
-    return adapter.ensureFile(loc, filePath);
+    return adapter.emptyDir(loc, dirPath);
   }
 
   async ensureDir(locId: string, dirPath: string) {
@@ -120,6 +85,20 @@ export class FavaCore {
     const loc = this.findLocation(locId);
     const adapter = this.getAdapter(loc);
     return adapter.ensureDir(loc, dirPath);
+  }
+
+  async ensureFile(locId: string, filePath: string) {
+    this.logger.debug(`ensureFile`, locId, filePath);
+    const loc = this.findLocation(locId);
+    const adapter = this.getAdapter(loc);
+    return adapter.ensureFile(loc, filePath);
+  }
+
+  async exists(locId: string, path: string): Promise<boolean> {
+    this.logger.debug(`pathExists`, locId, path);
+    const loc = this.findLocation(locId);
+    const adapter = this.getAdapter(loc);
+    return adapter.exists(loc, path);
   }
 
   async move(fromLocId: string, fromPath: string, toLocId: string, toPath: string, options?: MoveOptions) {
@@ -137,11 +116,46 @@ export class FavaCore {
     }
   }
 
+  async readDir(locId: string, dirPath: string) {
+    this.logger.debug(`readDir`, locId, dirPath);
+    const loc = this.findLocation(locId);
+    const adapter = this.getAdapter(loc);
+    return adapter.readDir(loc, dirPath);
+  }
+
+  async readFile(locId: string, filePath: string, options?: ReadFileOptions) {
+    this.logger.debug(`readFile`, locId, filePath, options);
+    const loc = this.findLocation(locId);
+    const adapter = this.getAdapter(loc);
+    return adapter.readFile(loc, filePath, options);
+  }
+
+  async readFileChunk(locId: string, filePath: string, options?: ReadChunkOptions) {
+    this.logger.debug(`read`, locId, filePath, options);
+    const loc = this.findLocation(locId);
+    const adapter = this.getAdapter(loc);
+    return adapter.readFileChunk(loc, filePath, options);
+  }
+
+  async remove(locId: string, path: string) {
+    this.logger.debug(`remove`, locId, path);
+    const loc = this.findLocation(locId);
+    const adapter = this.getAdapter(loc);
+    return adapter.remove(loc, path);
+  }
+
   async rename(locId: string, oldPath: string, newPath: string) {
     this.logger.debug(`rename`, locId, oldPath, newPath);
     const loc = this.findLocation(locId);
     const adapter = this.getAdapter(loc);
     return adapter.rename(loc, oldPath, newPath);
+  }
+
+  async stat(locId: string, path: string) {
+    this.logger.debug(`stat`, locId, path);
+    const loc = this.findLocation(locId);
+    const adapter = this.getAdapter(loc);
+    return adapter.stat(loc, path);
   }
 
   async touch(locId: string, filePath: string) {
@@ -163,22 +177,6 @@ export class FavaCore {
     const loc = this.findLocation(locId);
     const adapter = this.getAdapter(loc);
     return adapter.writeFileChunk(loc, filePath, data, options);
-  }
-
-  // ========== DELETE
-
-  async emptyDir(locId: string, dirPath: string) {
-    this.logger.debug(`emptyDir`, locId, dirPath);
-    const loc = this.findLocation(locId);
-    const adapter = this.getAdapter(loc);
-    return adapter.emptyDir(loc, dirPath);
-  }
-
-  async remove(locId: string, path: string) {
-    this.logger.debug(`remove`, locId, path);
-    const loc = this.findLocation(locId);
-    const adapter = this.getAdapter(loc);
-    return adapter.remove(loc, path);
   }
 
 }

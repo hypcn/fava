@@ -103,11 +103,20 @@ export class FsAdapter implements IFavaAdapter<FavaLocation_FS> {
   async readFile(loc: FavaLocation_FS, filePath: string, options?: ReadFileOptions): Promise<ReadFileResult> {
     this.logger.verbose(`readFile:`, loc.id, filePath);
     const path = join(loc.root, filePath);
-    const file = await fse.readFile(path, {
-      encoding: options?.encoding,
-    });
+
+    const [
+      file,
+      stat,
+    ] = await Promise.all([
+      fse.readFile(path, { encoding: options?.encoding }),
+      this.stat(loc, filePath),
+    ]);
+    
     return {
       data: file,
+      fileSize: stat.size,
+      mimeType: stat.mimeType,
+      lastModified: Math.max(stat.changed, stat.modified),
     };
   }
 
@@ -206,7 +215,7 @@ export class FsAdapter implements IFavaAdapter<FavaLocation_FS> {
 
   // fails if file doesn't exist
   async writeFileChunk(loc: FavaLocation_FS, filePath: string, data: FileData, options?: WriteChunkOptions): Promise<WriteChunkResult> {
-    this.logger.verbose(`writeFileChunk:`, loc.id, filePath);
+    this.logger.verbose(`writeFileChunk:`, loc.id, filePath, options);
 
     // Ensure the file exists before attempting to write a chunk
     const fullPath = join(loc.root, filePath);
@@ -219,9 +228,9 @@ export class FsAdapter implements IFavaAdapter<FavaLocation_FS> {
     // Set default options
     const encoding = (options?.encoding || 'utf8') as BufferEncoding;
     const position = options?.position || null;
-    const length = (options?.length || (data instanceof Uint8Array)
-        ? data.length
-        : Buffer.byteLength(data, encoding));
+    const length = options?.length || ((typeof data === "string")
+      ? Buffer.byteLength(data, encoding)
+      : data.length);
 
     // Write the chunk to the file
     const fd = await fse.open(fullPath, 'r+');
@@ -233,7 +242,7 @@ export class FsAdapter implements IFavaAdapter<FavaLocation_FS> {
         writeResult = await fse.write(fd, data, 0, length, position);
       }
       return {
-        bytesWritten: writeResult.bytesWritten
+        bytesWritten: writeResult.bytesWritten,
       };
     } finally {
       await fse.close(fd);

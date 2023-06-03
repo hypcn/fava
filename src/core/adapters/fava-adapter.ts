@@ -101,14 +101,22 @@ export class FavaAdapter implements IFavaAdapter<FavaLocation_Fava> {
     this.logger.debug(`readFile:`, loc.id, filePath, options);
     const client = this.getClient(loc);
 
-    let result: string | Uint8Array;
-    if (options?.encoding !== undefined) {
-      result = await client.readFile(loc.remoteId, filePath, { returnAs: "text" });
-    } else {
-      result = await client.readFile(loc.remoteId, filePath, { returnAs: "binary" });
-    }
+    const result = await client.readFile(loc.remoteId, filePath, {
+      returnAs: options?.encoding !== undefined ? "text" : "binary",
+    });
+
+    // let result: string | Uint8Array;
+    // if (options?.encoding !== undefined) {
+    //   result = await client.readFile(loc.remoteId, filePath, { returnAs: "text" });
+    // } else {
+    //   result = await client.readFile(loc.remoteId, filePath, { returnAs: "binary" });
+    // }
+
     return {
-      data: result,
+      data: result.data,
+      fileSize: result.fileSize,
+      lastModified: result.lastModified,
+      mimeType: result.mimeType,
     };
   }
 
