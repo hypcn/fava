@@ -72,7 +72,6 @@ Run tests:
 Core
 
 - server WS API
-- server serves web page (at "/", api is at "/api")
 - define auth requirements
   - implement them
   - unauthenticated should *not* be the default
