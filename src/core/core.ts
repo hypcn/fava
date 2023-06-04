@@ -1,13 +1,6 @@
 import { Logger } from "@hypericon/axe";
-import { FavaLocation, FavaLocationType } from "../shared";
+import { FavaLocation } from "../shared";
 import { CopyOptions, FileData, IFavaAdapter, MoveOptions, ReadChunkOptions, ReadFileOptions, WriteChunkOptions, WriteFileOptions } from "./adapters/adapter.interface";
-import { FavaAdapter } from "./adapters/fava-adapter";
-import { FsAdapter } from "./adapters/fs-adapter";
-
-const adapters: { [key in FavaLocationType]: IFavaAdapter<FavaLocation> } = {
-  FS: new FsAdapter(),
-  Fava: new FavaAdapter(),
-};
 
 /**
  * @internal
