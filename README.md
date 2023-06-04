@@ -75,7 +75,6 @@ Core
 - define auth requirements
   - implement them
   - unauthenticated should *not* be the default
-- ? file preview thumbnails?
 - streams to manage large files, and moving between locations
 - cache headers, etag, etc.
 
@@ -92,6 +91,8 @@ Future extensions:
 
 - Create/generate OpenAPI spec for HTTP API
 - thumbnail media previews
+  - separate endpoint?
+  - preview thumbnails for any file type?
 - preview selected file
 - autoplay media/slideshow?
 
